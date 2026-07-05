@@ -1,0 +1,25 @@
+======================================================================
+Esperimento: ADWIN Prediction Drift su ELEC2
+Data: 2026-07-05 22:43:49
+======================================================================
+
+Configurazione:
+  Dataset: data/electricity-normalized.csv
+  Campioni totali: 45312
+  Campioni di training: 500
+  Campioni in streaming: 44812
+  Classificatore: GaussianNB (statico)
+  Detector: PredictionDriftDetector(ADWINStrategy)
+  Stream monitorato: y_pred (binario UP=1, DOWN=0)
+  Parametri: delta=0.002
+
+----------------------------------------------------------------------
+Risultati prediction drift
+----------------------------------------------------------------------
+Segnalazioni di drift totali: 2
+Primo drift al passo t = 723
+Ultimo drift al passo t = 1075
+
+Elenco delle segnalazioni:
+  passo t = 723
+  passo t = 1075

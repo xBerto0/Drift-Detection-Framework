@@ -1,0 +1,243 @@
+% =============================================================================
+% Capitolo 1 — Introduzione
+% =============================================================================
+% Prima stesura, da rifinire dopo aver definito la bib e lo stile con il relatore.
+% Le \cite{} usano placeholder key coerenti con la bibliografia proposta:
+%   - gama2014survey       -> Gama et al. 2014
+%   - lu2019learning       -> Lu et al. 2019
+%   - sethi2018reliable    -> Sethi & Kantardzic 2018
+%   - baier2020detecting   -> Baier et al. 2020
+%   - bifet2007adwin       -> Bifet & Gavaldà 2007 (SIAM)
+%   - bifet2006adwin       -> Bifet & Gavaldà 2006 (technical report UPC)
+%   - gof1994patterns      -> Gamma et al. 1994
+%   - scipy2020            -> Virtanen et al. 2020 (SciPy)
+%   - montiel2021river     -> Montiel et al. 2021 (river)
+% =============================================================================
+
+\chapter{Introduzione}
+\label{ch:introduzione}
+
+\section{Contesto e motivazione}
+\label{sec:contesto-motivazione}
+
+Il \textit{Machine Learning} è diventato negli ultimi due decenni una tecnologia
+pervasiva nell'industria del software, con applicazioni che spaziano dalla
+classificazione automatica di testi al riconoscimento di immagini, dalla
+previsione della domanda commerciale al rilevamento di frodi finanziarie. La
+disponibilità di dataset di grandi dimensioni, l'aumento della potenza di calcolo
+e la diffusione di framework open-source hanno reso possibile la costruzione di
+modelli predittivi sempre più accurati e complessi, aumentandone rapidamente il
+grado di adozione in ambito produttivo.
+
+Tuttavia, l'accuratezza raggiunta in fase di addestramento non garantisce
+prestazioni analoghe una volta che il modello viene messo \textit{in produzione},
+ovvero utilizzato per prendere decisioni operative su dati nuovi non presenti nel
+dataset di addestramento. Uno dei problemi più insidiosi che affliggono i sistemi
+di Machine Learning in produzione è il cosiddetto \textit{drift}: un
+cambiamento nel tempo delle proprietà statistiche dei dati in ingresso, delle
+predizioni prodotte dal modello, o della relazione tra ingresso e uscita.
+
+Quando si verifica un drift, le prestazioni del modello tendono a degradare
+progressivamente, spesso in modo silenzioso, senza che venga generato alcun
+errore esplicito né alcuna segnalazione automatica da parte del sistema. La
+conseguenza di un drift non rilevato può essere estremamente gravosa: modelli
+utilizzati per approvare richieste di credito, per classificare comunicazioni
+di clienti, per prevedere la manutenzione di impianti industriali o per
+rilevare comportamenti anomali possono iniziare a produrre decisioni
+sistematicamente errate, con impatti economici, reputazionali e in alcuni
+contesti anche legali significativi. La letteratura scientifica ha documentato
+numerosi casi di degradazione di modelli in ambiente produttivo e ha
+evidenziato come la mancanza di un adeguato sistema di monitoraggio costituisca
+uno dei principali fattori di rischio nell'adozione di sistemi di Machine
+Learning in ambito industriale \cite{gama2014survey,lu2019learning}.
+
+In risposta a queste criticità è emersa una disciplina denominata
+\textit{MLOps} (\textit{Machine Learning Operations}), che si propone di
+applicare i principi del DevOps ai sistemi di Machine Learning, includendo tra
+i suoi obiettivi principali il monitoraggio continuo dei modelli in produzione,
+la rilevazione automatica del drift e l'attivazione di procedure di
+riaddestramento quando necessario. Costruire un sistema robusto di
+\textit{drift monitoring}, capace di identificare tempestivamente cambiamenti
+significativi nei dati e di guidare le azioni correttive conseguenti,
+rappresenta oggi una delle sfide più rilevanti nell'ingegnerizzazione dei
+sistemi di Machine Learning a livello industriale.
+
+
+\section{Contesto aziendale}
+\label{sec:contesto-aziendale}
+
+Il presente lavoro di tesi è stato svolto in collaborazione con
+\textit{Engineering Ingegneria Informatica S.p.A.}, una delle principali
+aziende italiane operanti nel settore della trasformazione digitale, con
+attività in numerosi ambiti strategici tra cui pubblica amministrazione,
+energia, telecomunicazioni, sanità e finanza. All'interno dell'azienda, il
+ricorso a modelli di Machine Learning per l'automazione di processi
+decisionali e per l'analisi predittiva sta diventando sempre più diffuso,
+con la conseguente necessità di garantire che questi sistemi mantengano nel
+tempo prestazioni conformi alle aspettative sancite in fase di sviluppo.
+
+La proposta di tesi, elaborata sotto la supervisione del tutor aziendale
+Daniele Fakhoury, si inserisce in un più ampio programma di ricerca applicata
+che l'azienda sta portando avanti sul tema dell'MLOps. Nello specifico, il
+lavoro mira a fornire fondamenta metodologiche e implementative per un
+servizio di drift monitoring riutilizzabile, che possa in prospettiva essere
+integrato nei processi di gestione dei modelli in uso o in via di sviluppo.
+Il carattere aziendale del progetto pone accento su tre aspetti: la robustezza
+pratica delle soluzioni proposte, la loro estendibilità a scenari applicativi
+diversi, e la compatibilità con le principali tecnologie MLOps oggi in uso
+nell'industria del software.
+
+
+\section{Obiettivi della tesi}
+\label{sec:obiettivi}
+
+Il lavoro persegue sei obiettivi principali, di seguito descritti.
+
+\paragraph{Obiettivo 1 — Caratterizzazione del drift e analisi del suo impatto.}
+Il primo obiettivo consiste nell'analizzare e categorizzare le diverse
+tipologie di drift che possono manifestarsi in un sistema di Machine Learning,
+con particolare attenzione alla loro definizione formale e al loro impatto
+sulle prestazioni dei modelli. Verranno considerate le tre principali categorie
+di drift: il \textit{feature drift} (o \textit{data drift}), che riguarda il
+cambiamento nella distribuzione delle variabili di ingresso; il
+\textit{prediction drift}, relativo alla distribuzione delle predizioni
+prodotte dal modello; e il \textit{concept drift}, che riguarda la relazione
+tra input e output. La caratterizzazione includerà anche una discussione delle
+modalità temporali con cui il drift può manifestarsi, ossia in modo brusco,
+graduale, incrementale o ricorrente.
+
+\paragraph{Obiettivo 2 — Metriche statistiche e metodi di detection.}
+Il secondo obiettivo prevede l'analisi, la selezione e l'implementazione di
+tecniche statistiche adeguate al rilevamento delle diverse forme di drift. In
+questa fase vengono considerate sia tecniche classiche basate su test di
+ipotesi (come il test di \textit{Kolmogorov-Smirnov}), sia tecniche pensate
+specificamente per contesti di \textit{streaming} (come l'algoritmo
+\textit{ADWIN}, \textit{ADaptive WINdowing}) \cite{bifet2007adwin}. Ciascun
+metodo viene implementato in modo integrato all'interno di un framework
+unificato, testato su dataset sintetici e validato su dataset reali provenienti
+dalla letteratura di riferimento.
+
+\paragraph{Obiettivo 3 — Progettazione e sviluppo di servizi di monitoring.}
+Il terzo obiettivo consiste nella progettazione e implementazione di servizi
+di monitoring capaci di tracciare il comportamento dei dati e dei modelli in
+ambienti di produzione. Il servizio viene progettato secondo principi di
+modularità e model-agnosticità, in modo da poter essere utilizzato con modelli
+di natura differente senza richiedere modifiche al codice.
+
+\paragraph{Obiettivo 4 — Valutazione delle strategie di retraining.}
+Il quarto obiettivo prevede la sperimentazione di strategie di riaddestramento
+attivate in risposta a un evento di drift o a un degrado prestazionale
+osservato, con la valutazione della loro efficacia ed efficienza in scenari
+controllati.
+
+\paragraph{Obiettivo 5 — Pipeline MLOps end-to-end e containerizzazione.}
+Il quinto obiettivo prevede la progettazione di una pipeline
+\textit{end-to-end} che integri le componenti di monitoring e retraining
+sviluppate all'interno di un framework MLOps, sfruttando strumenti come
+\textit{MLflow} per il tracciamento degli esperimenti, \textit{Argo Workflows}
+e \textit{Argo Events} per l'orchestrazione, e \textit{Docker} per la
+containerizzazione delle componenti.
+
+\paragraph{Obiettivo 6 — Documentazione e riproducibilità.}
+L'ultimo obiettivo consiste nella redazione di una documentazione completa del
+framework e delle scelte progettuali effettuate, tale da garantire la
+riproducibilità degli esperimenti e la manutenibilità del codice.
+
+
+\section{Contributo}
+\label{sec:contributo}
+
+Il contributo principale di questa tesi è la progettazione e l'implementazione
+di un framework modulare per il drift monitoring, denominato
+\texttt{drift\_framework}, che si distingue dalle soluzioni esistenti in
+letteratura e sul mercato per alcuni aspetti significativi.
+
+Un primo elemento di rilievo è la struttura architetturale, basata sul
+\textit{Strategy Pattern} \cite{gof1994patterns}: le tecniche di drift
+detection vengono implementate come strategie intercambiabili, che condividono
+un'interfaccia comune e possono essere sostituite o affiancate senza modifiche
+al resto del codice. Questa scelta consente di adottare tecniche di detection
+diverse per uno stesso modello o di sperimentare tecniche nuove semplicemente
+aggiungendo una nuova classe che implementi l'interfaccia astratta comune.
+
+Un secondo elemento è la separazione netta tra \textit{strategie} — algoritmi
+che operano su singoli stream numerici — e \textit{detector} — orchestratori
+che operano su vettori di feature, sequenze di predizioni o stream di errori.
+Questa separazione garantisce che la stessa strategia possa essere riutilizzata
+per tipologie di drift diverse (feature, prediction, concept) senza
+duplicazione di codice.
+
+Un terzo elemento riguarda la \textit{model-agnosticità}: il framework non fa
+alcuna assunzione sulla natura del modello di Machine Learning che monitora.
+Il modello viene considerato un'entità che espone unicamente un metodo di
+predizione, e tutte le informazioni necessarie al drift detection vengono
+ricavate dagli stream di dati che attraversano il modello stesso. Questa scelta
+rende il framework applicabile a modelli di natura fortemente eterogenea, dai
+classificatori lineari alle reti neurali profonde, e a task diversi come
+classificazione, regressione e clustering.
+
+Infine, il lavoro fornisce una prima validazione sperimentale del framework
+attraverso il confronto tra le due strategie implementate nella fase iniziale
+del lavoro — Kolmogorov-Smirnov e ADWIN — su scenari sintetici fedeli alla
+letteratura, discutendo in modo argomentato le loro proprietà complementari
+ed evidenziando i \textit{trade-off} che possono guidare la scelta di una
+strategia in scenari applicativi diversi.
+
+Nel complesso, il contributo della tesi non si colloca sul piano della
+reimplementazione degli algoritmi di drift detection — per i quali sono state
+adottate implementazioni consolidate come \textit{scipy.stats} \cite{scipy2020}
+e \textit{river} \cite{montiel2021river} — bensì sul piano della progettazione
+di un livello di astrazione superiore, che permetta di comporre, sostituire ed
+estendere in modo pulito i vari componenti del sistema di monitoring, aprendo
+la strada a un impiego industriale sostenibile della disciplina.
+
+
+\section{Struttura della tesi}
+\label{sec:struttura}
+
+La tesi è organizzata in otto capitoli.
+
+Il presente \textbf{Capitolo~\ref{ch:introduzione}} ha introdotto il contesto
+del lavoro, presentato gli obiettivi principali e riassunto il contributo
+scientifico e ingegneristico che si intende offrire.
+
+Il \textbf{Capitolo~2} è dedicato allo stato dell'arte. Verranno approfonditi
+i concetti fondamentali del ciclo di vita di un modello di Machine Learning in
+produzione, il fenomeno del drift nelle sue diverse tipologie, le principali
+tecniche di detection presenti in letteratura e la posizione del drift
+monitoring all'interno della più ampia disciplina dell'MLOps. Verrà inoltre
+presentato un confronto tra le principali librerie esistenti per il drift
+detection, motivando le scelte tecnologiche compiute nel lavoro.
+
+Il \textbf{Capitolo~3} presenta l'architettura del framework sviluppato,
+discutendone i principi di design, la struttura a tre livelli (strategie,
+detector, servizio di monitoring) e le motivazioni delle scelte progettuali
+effettuate. Particolare attenzione viene dedicata al ruolo del Strategy Pattern
+come scelta architetturale abilitante e al principio Open/Closed applicato al
+framework.
+
+Il \textbf{Capitolo~4} descrive nel dettaglio le due strategie di drift
+detection implementate nella fase iniziale del lavoro: il test di
+Kolmogorov-Smirnov e l'algoritmo ADWIN. Per ciascuna vengono presentati i
+fondamenti teorici, i dettagli implementativi, i limiti noti e le
+considerazioni pratiche che ne orientano l'uso.
+
+Il \textbf{Capitolo~5} descrive i detector e i meccanismi di orchestrazione: il
+\texttt{FeatureDriftDetector} come orchestratore multi-feature attualmente
+implementato, e i placeholder architetturali per il
+\texttt{PredictionDriftDetector}, il \texttt{ConceptDriftDetector} e il
+\texttt{DriftMonitoringService} centrale, previsti come sviluppi successivi
+del lavoro.
+
+Il \textbf{Capitolo~6} presenta la validazione sperimentale del lavoro: la
+metodologia adottata, gli esperimenti condotti su dataset sintetici, i
+risultati ottenuti dal confronto tra le due strategie implementate e le
+successive validazioni previste su dataset reali provenienti dalla letteratura.
+
+Il \textbf{Capitolo~7} descrive la pipeline MLOps \textit{end-to-end},
+comprensiva dei meccanismi di retraining automatico e delle scelte di
+integrazione con gli strumenti industriali di riferimento.
+
+Il \textbf{Capitolo~8} chiude la tesi con un riepilogo del lavoro svolto,
+un'analisi dei principali risultati ottenuti, una discussione dei limiti
+identificati e la presentazione delle direzioni di sviluppo futuro.

@@ -1,0 +1,47 @@
+======================================================================
+Esperimento: KS Prediction Drift su ELEC2
+Data: 2026-07-05 22:10:09
+======================================================================
+
+Configurazione:
+  Dataset: data/electricity-normalized.csv
+  Campioni totali: 45312
+  Campioni di training: 500
+  Campioni in streaming: 44812
+  Classificatore: GaussianNB (statico)
+  Detector: PredictionDriftDetector(KSStrategy)
+  Stream monitorato: y_pred (binario UP=1, DOWN=0)
+  Parametri: window_size=200, alpha=0.05
+
+Nota: KS su stream binari ha potere statistico ridotto.
+      Include come confronto con ADWIN, che gestisce nativamente
+      dati discreti.
+
+----------------------------------------------------------------------
+Risultati prediction drift
+----------------------------------------------------------------------
+Segnalazioni di drift totali: 44180
+Primo drift al passo t = 899
+Ultimo drift al passo t = 45311
+
+Elenco delle prime 20 segnalazioni:
+  passo t = 899
+  passo t = 900
+  passo t = 901
+  passo t = 902
+  passo t = 903
+  passo t = 904
+  passo t = 905
+  passo t = 906
+  passo t = 907
+  passo t = 908
+  passo t = 909
+  passo t = 910
+  passo t = 911
+  passo t = 912
+  passo t = 1146
+  passo t = 1147
+  passo t = 1148
+  passo t = 1149
+  passo t = 1150
+  passo t = 1151

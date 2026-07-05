@@ -1,0 +1,141 @@
+======================================================================
+Esperimento: ADWIN Concept Drift su ELEC2
+Data: 2026-07-05 22:43:49
+======================================================================
+
+Configurazione:
+  Dataset: data/electricity-normalized.csv
+  Campioni totali: 45312
+  Campioni di training: 500
+  Campioni in streaming: 44812
+  Classificatore: GaussianNB (statico)
+  Accuracy sul training set: 0.7140
+  Detector: ConceptDriftDetector(ADWINStrategy)
+  Stream monitorato: errore binario (1 se y_pred != y_true)
+  Parametri: delta=0.002
+
+Nota: setup analogo alla configurazione 'ADWIN esterno' del paper
+      Bifet & Gavalda 2006, sezione 5.1.
+
+----------------------------------------------------------------------
+Risultati concept drift
+----------------------------------------------------------------------
+Segnalazioni di drift totali: 66
+Primo drift al passo t = 1619
+Ultimo drift al passo t = 44979
+
+Elenco delle segnalazioni:
+  passo t = 1619
+  passo t = 1939
+  passo t = 2931
+  passo t = 3027
+  passo t = 3507
+  passo t = 3891
+  passo t = 4499
+  passo t = 5395
+  passo t = 5523
+  passo t = 6515
+  passo t = 6803
+  passo t = 7091
+  passo t = 7347
+  passo t = 9075
+  passo t = 9299
+  passo t = 10163
+  passo t = 11603
+  passo t = 11827
+  passo t = 12627
+  passo t = 14163
+  passo t = 14835
+  passo t = 15379
+  passo t = 16723
+  passo t = 17523
+  passo t = 19091
+  passo t = 20211
+  passo t = 20499
+  passo t = 21395
+  passo t = 22099
+  passo t = 22547
+  passo t = 23219
+  passo t = 23539
+  passo t = 23763
+  passo t = 23923
+  passo t = 24147
+  passo t = 24723
+  passo t = 24947
+  passo t = 25235
+  passo t = 25811
+  passo t = 26035
+  passo t = 26163
+  passo t = 27091
+  passo t = 27411
+  passo t = 27603
+  passo t = 27763
+  passo t = 28595
+  passo t = 29267
+  passo t = 29939
+  passo t = 31955
+  passo t = 32211
+  passo t = 33011
+  passo t = 33907
+  passo t = 34131
+  passo t = 34355
+  passo t = 34611
+  passo t = 38163
+  passo t = 38355
+  passo t = 39859
+  passo t = 40211
+  passo t = 42291
+  passo t = 42803
+  passo t = 43283
+  passo t = 43667
+  passo t = 44371
+  passo t = 44691
+  passo t = 44979
+
+Accuracy del classificatore (media mobile su 1000 campioni):
+Utile per confrontare i punti in cui l'accuracy cala con
+i punti in cui ADWIN ha segnalato drift.
+  passo 1499: 0.8340
+  passo 2499: 0.5840
+  passo 3499: 0.5510
+  passo 4499: 0.6910
+  passo 5499: 0.6170
+  passo 6499: 0.5740
+  passo 7499: 0.5420
+  passo 8499: 0.4630
+  passo 9499: 0.5040
+  passo 10499: 0.4650
+  passo 11499: 0.6010
+  passo 12499: 0.4990
+  passo 13499: 0.5090
+  passo 14499: 0.5150
+  passo 15499: 0.5920
+  passo 16499: 0.5780
+  passo 17499: 0.6600
+  passo 18499: 0.5940
+  passo 19499: 0.5590
+  passo 20499: 0.5130
+  passo 21499: 0.6810
+  passo 22499: 0.6580
+  passo 23499: 0.5850
+  passo 24499: 0.6180
+  passo 25499: 0.5540
+  passo 26499: 0.5940
+  passo 27499: 0.5590
+  passo 28499: 0.6290
+  passo 29499: 0.6120
+  passo 30499: 0.6040
+  passo 31499: 0.6220
+  passo 32499: 0.5480
+  passo 33499: 0.5510
+  passo 34499: 0.5810
+  passo 35499: 0.6780
+  passo 36499: 0.6730
+  passo 37499: 0.6530
+  passo 38499: 0.6010
+  passo 39499: 0.5010
+  passo 40499: 0.4640
+  passo 41499: 0.4320
+  passo 42499: 0.5450
+  passo 43499: 0.5510
+  passo 44499: 0.6230

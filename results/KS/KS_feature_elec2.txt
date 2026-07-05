@@ -1,0 +1,78 @@
+======================================================================
+Esperimento: KS Feature Drift su ELEC2
+Data: 2026-07-05 22:10:09
+======================================================================
+
+Configurazione:
+  Dataset: data/electricity-normalized.csv
+  Campioni totali: 45312
+  Feature (8): ['date', 'day', 'period', 'nswprice', 'nswdemand', 'vicprice', 'vicdemand', 'transfer']
+  Campioni di training: 500
+  Campioni in streaming: 44812
+  Classificatore: GaussianNB (statico)
+  Accuracy sul training set: 0.7140
+  Detector: FeatureDriftDetector(KSStrategy)
+  Parametri: window_size=200, alpha=0.05, k=1
+
+----------------------------------------------------------------------
+Risultati feature drift
+----------------------------------------------------------------------
+Segnalazioni di drift globale (>=k feature drittate): 44413
+Primo drift al passo t = 899
+Ultimo drift al passo t = 45311
+
+Frequenza di drift per feature:
+  date: 44413 volte
+  day: 37153 volte
+  period: 0 volte
+  nswprice: 44373 volte
+  nswdemand: 36545 volte
+  vicprice: 27856 volte
+  vicdemand: 27861 volte
+  transfer: 27861 volte
+
+Accuracy del classificatore (media mobile su 1000 campioni):
+  passo 1499: 0.8340
+  passo 2499: 0.5840
+  passo 3499: 0.5510
+  passo 4499: 0.6910
+  passo 5499: 0.6170
+  passo 6499: 0.5740
+  passo 7499: 0.5420
+  passo 8499: 0.4630
+  passo 9499: 0.5040
+  passo 10499: 0.4650
+  passo 11499: 0.6010
+  passo 12499: 0.4990
+  passo 13499: 0.5090
+  passo 14499: 0.5150
+  passo 15499: 0.5920
+  passo 16499: 0.5780
+  passo 17499: 0.6600
+  passo 18499: 0.5940
+  passo 19499: 0.5590
+  passo 20499: 0.5130
+  passo 21499: 0.6810
+  passo 22499: 0.6580
+  passo 23499: 0.5850
+  passo 24499: 0.6180
+  passo 25499: 0.5540
+  passo 26499: 0.5940
+  passo 27499: 0.5590
+  passo 28499: 0.6290
+  passo 29499: 0.6120
+  passo 30499: 0.6040
+  passo 31499: 0.6220
+  passo 32499: 0.5480
+  passo 33499: 0.5510
+  passo 34499: 0.5810
+  passo 35499: 0.6780
+  passo 36499: 0.6730
+  passo 37499: 0.6530
+  passo 38499: 0.6010
+  passo 39499: 0.5010
+  passo 40499: 0.4640
+  passo 41499: 0.4320
+  passo 42499: 0.5450
+  passo 43499: 0.5510
+  passo 44499: 0.6230
