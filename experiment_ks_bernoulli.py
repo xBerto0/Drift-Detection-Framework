@@ -10,6 +10,14 @@ from pathlib import Path
 
 import numpy as np
 
+from config import (
+    BERNOULLI_DRIFT_POINT,
+    BERNOULLI_N_SAMPLES,
+    BERNOULLI_SEED,
+    FEATURE_K_THRESHOLD,
+    KS_ALPHA,
+    KS_WINDOW_SIZE,
+)
 from data.synthetic_generator import bernoulli_with_abrupt_drift
 from detectors.feature_drift_detector import FeatureDriftDetector
 from detectors.ks_strategy import KSStrategy
@@ -19,12 +27,12 @@ from detectors.ks_strategy import KSStrategy
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="scipy")
 
 
-# --- Parametri dell'esperimento ---
-N_SAMPLES = 2000
-DRIFT_POINT = 1000
-SEED = 42
-WINDOW_SIZE = 200
-ALPHA = 0.05
+# --- Parametri dell'esperimento (caricati da .env tramite config.py) ---
+N_SAMPLES = BERNOULLI_N_SAMPLES
+DRIFT_POINT = BERNOULLI_DRIFT_POINT
+SEED = BERNOULLI_SEED
+WINDOW_SIZE = KS_WINDOW_SIZE
+ALPHA = KS_ALPHA
 
 # --- Generazione delle 3 feature ---
 feature_0 = bernoulli_with_abrupt_drift(
@@ -46,7 +54,7 @@ data = np.column_stack([feature_0, feature_1, feature_2])
 detector = FeatureDriftDetector(
     strategy_cls=KSStrategy,
     n_features=3,
-    k=1,
+    k=FEATURE_K_THRESHOLD,
     feature_names=["f0_stable", "f1_drift", "f2_stable"],
     window_size=WINDOW_SIZE,
     alpha=ALPHA,

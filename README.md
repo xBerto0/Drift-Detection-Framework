@@ -74,12 +74,31 @@ Gli output vengono salvati in `results/<algoritmo>/<algoritmo>_<tipodrift>_<data
 - `pandas`
 - `scikit-learn`
 - `river`
+- `python-dotenv` — per il caricamento dei parametri di configurazione da `.env`
 
 Installazione:
 
 ```powershell
-pip install numpy scipy pandas scikit-learn river
+pip install numpy scipy pandas scikit-learn river python-dotenv
 ```
+
+## Configurazione degli esperimenti
+
+Tutti i parametri degli esperimenti (dimensioni delle finestre, soglia
+`alpha`, `delta` di ADWIN, dimensione del training set, ecc.) sono
+esternalizzati nel file `.env` alla radice del progetto. Per modificarli
+basta editare `.env`, senza toccare il codice.
+
+Esempio di sezione da `.env`:
+
+```env
+KS_WINDOW_SIZE=200
+KS_ALPHA=0.05
+ADWIN_DELTA=0.002
+```
+
+I parametri vengono letti tramite `config.py`, che li espone agli script
+sperimentali con i tipi corretti.
 
 ## Riferimenti principali
 

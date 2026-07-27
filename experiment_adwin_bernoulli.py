@@ -9,16 +9,23 @@ from pathlib import Path
 
 import numpy as np
 
+from config import (
+    ADWIN_DELTA,
+    BERNOULLI_DRIFT_POINT,
+    BERNOULLI_N_SAMPLES,
+    BERNOULLI_SEED,
+    FEATURE_K_THRESHOLD,
+)
 from data.synthetic_generator import bernoulli_with_abrupt_drift
 from detectors.adwin_strategy import ADWINStrategy
 from detectors.feature_drift_detector import FeatureDriftDetector
 
 
-# --- Parametri dell'esperimento ---
-N_SAMPLES = 2000
-DRIFT_POINT = 1000
-SEED = 42
-DELTA = 0.002
+# --- Parametri dell'esperimento (caricati da .env tramite config.py) ---
+N_SAMPLES = BERNOULLI_N_SAMPLES
+DRIFT_POINT = BERNOULLI_DRIFT_POINT
+SEED = BERNOULLI_SEED
+DELTA = ADWIN_DELTA
 
 # --- Generazione delle 3 feature (uguale al test KS) ---
 feature_0 = bernoulli_with_abrupt_drift(
@@ -40,7 +47,7 @@ data = np.column_stack([feature_0, feature_1, feature_2])
 detector = FeatureDriftDetector(
     strategy_cls=ADWINStrategy,
     n_features=3,
-    k=1,
+    k=FEATURE_K_THRESHOLD,
     feature_names=["f0_stable", "f1_drift", "f2_stable"],
     delta=DELTA,
 )

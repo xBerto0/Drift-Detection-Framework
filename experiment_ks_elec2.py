@@ -17,6 +17,13 @@ import numpy as np
 import pandas as pd
 from sklearn.naive_bayes import GaussianNB
 
+from config import (
+    DATASET_ELEC2_PATH,
+    ELEC2_TRAIN_SIZE,
+    FEATURE_K_THRESHOLD,
+    KS_ALPHA,
+    KS_WINDOW_SIZE,
+)
 from detectors.feature_drift_detector import FeatureDriftDetector
 from detectors.ks_strategy import KSStrategy
 from detectors.prediction_drift_detector import PredictionDriftDetector
@@ -26,11 +33,11 @@ from detectors.prediction_drift_detector import PredictionDriftDetector
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="scipy")
 
 
-# --- Parametri dell'esperimento ---
-DATASET_PATH = "data/electricity-normalized.csv"
-TRAIN_SIZE = 500
-WINDOW_SIZE = 200
-ALPHA = 0.05
+# --- Parametri dell'esperimento (caricati da .env tramite config.py) ---
+DATASET_PATH = DATASET_ELEC2_PATH
+TRAIN_SIZE = ELEC2_TRAIN_SIZE
+WINDOW_SIZE = KS_WINDOW_SIZE
+ALPHA = KS_ALPHA
 
 # --- Caricamento del dataset ---
 df = pd.read_csv(DATASET_PATH)
@@ -55,7 +62,7 @@ train_accuracy = classifier.score(X_train, y_train)
 feature_detector = FeatureDriftDetector(
     strategy_cls=KSStrategy,
     n_features=n_features,
-    k=1,
+    k=FEATURE_K_THRESHOLD,
     feature_names=feature_names,
     window_size=WINDOW_SIZE,
     alpha=ALPHA,

@@ -15,16 +15,22 @@ import numpy as np
 import pandas as pd
 from sklearn.naive_bayes import GaussianNB
 
+from config import (
+    ADWIN_DELTA,
+    DATASET_ELEC2_PATH,
+    ELEC2_TRAIN_SIZE,
+    FEATURE_K_THRESHOLD,
+)
 from detectors.adwin_strategy import ADWINStrategy
 from detectors.concept_drift_detector import ConceptDriftDetector
 from detectors.feature_drift_detector import FeatureDriftDetector
 from detectors.prediction_drift_detector import PredictionDriftDetector
 
 
-# --- Parametri dell'esperimento ---
-DATASET_PATH = "data/electricity-normalized.csv"
-TRAIN_SIZE = 500
-DELTA = 0.002
+# --- Parametri dell'esperimento (caricati da .env tramite config.py) ---
+DATASET_PATH = DATASET_ELEC2_PATH
+TRAIN_SIZE = ELEC2_TRAIN_SIZE
+DELTA = ADWIN_DELTA
 
 # --- Caricamento del dataset ---
 df = pd.read_csv(DATASET_PATH)
@@ -47,7 +53,7 @@ train_accuracy = classifier.score(X_train, y_train)
 feature_detector = FeatureDriftDetector(
     strategy_cls=ADWINStrategy,
     n_features=n_features,
-    k=1,
+    k=FEATURE_K_THRESHOLD,
     feature_names=feature_names,
     delta=DELTA,
 )
