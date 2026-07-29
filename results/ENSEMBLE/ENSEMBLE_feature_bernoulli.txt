@@ -1,0 +1,64 @@
+======================================================================
+Esperimento: Ensemble (KS + ADWIN) Feature Drift su Bernoulli sintetica
+Data: 2026-07-29 19:54:40
+======================================================================
+
+Configurazione:
+  Scenario: Figura 2 di Bifet & Gavalda 2006 (cambio brusco al passo 500)
+  Numero campioni: 1000
+  Numero feature: 3
+  f0_stable: Bernoulli(p=0.2) per tutti i passi
+  f1_drift : Bernoulli(p=0.8) fino a t=500, poi Bernoulli(p=0.4)
+  f2_stable: Bernoulli(p=0.5) per tutti i passi
+  Seed base: 42
+
+  Strategie interne all'ensemble:
+    - KSStrategy(window_size=100, alpha=0.05)
+    - ADWINStrategy(delta=0.002)
+
+  Test in parallelo con aggregazione OR e AND
+
+----------------------------------------------------------------------
+Risultati con aggregazione OR (drift se almeno una segnala)
+----------------------------------------------------------------------
+Passi totali di drift: 439
+Primo drift: t=561
+Ultimo drift: t=999
+
+Prime 10 segnalazioni con dettaglio delle sotto-strategie:
+  t= 561  f1_drift  KS=True   ADWIN=False
+  t= 562  f1_drift  KS=True   ADWIN=False
+  t= 563  f1_drift  KS=True   ADWIN=False
+  t= 564  f1_drift  KS=True   ADWIN=False
+  t= 565  f1_drift  KS=True   ADWIN=False
+  t= 566  f1_drift  KS=True   ADWIN=False
+  t= 567  f1_drift  KS=True   ADWIN=False
+  t= 568  f1_drift  KS=True   ADWIN=False
+  t= 569  f1_drift  KS=True   ADWIN=False
+  t= 570  f1_drift  KS=True   ADWIN=False
+
+----------------------------------------------------------------------
+Risultati con aggregazione AND (drift solo se tutte segnalano)
+----------------------------------------------------------------------
+Passi totali di drift: 1
+Primo drift: t=575
+Ultimo drift: t=575
+
+Dettaglio di tutte le segnalazioni (attesi pochi punti):
+  t= 575  f1_drift  KS=True   ADWIN=True 
+
+----------------------------------------------------------------------
+Confronto OR vs AND
+----------------------------------------------------------------------
+Numero segnalazioni OR:  439
+Numero segnalazioni AND: 1
+Primo drift OR:  t=561
+Primo drift AND: t=575
+Differenza fra i due primi drift: 14 passi
+
+Interpretazione attesa:
+  - OR e' sensibile: appena UNA strategia segnala, scatta.
+    Su Bernoulli con KS a continuo signaling, OR imita KS.
+  - AND e' conservativo: entrambe devono concordare.
+    ADWIN segnala solo al momento del taglio della finestra,
+    quindi AND scatta solo quando anche KS sta gia' segnalando.

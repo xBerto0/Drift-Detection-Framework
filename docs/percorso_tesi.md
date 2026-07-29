@@ -2,7 +2,7 @@
 
 **Autore**: Alberto Conti
 **Anno accademico**: 2025-2026
-**Data ultima revisione**: 2026-07-29
+**Data ultima revisione**: 2026-07-29 (Fase 11 aggiunta)
 **Obiettivo del documento**: fornire a un LLM (o a un lettore umano) tutto il
 contesto, i ragionamenti, le decisioni di design e i risultati del lavoro di
 tesi, in modo da poter cominciare a scrivere la tesi in modo informato e
@@ -26,9 +26,10 @@ del percorso**, con particolare attenzione al *perché* delle scelte fatte.
 9. Fase 8 — L'esperimento su ELEC2
 10. Fase 9 — Analisi trasversale dei risultati
 11. Fase 10 — Esternalizzazione dei parametri
-12. Riferimenti bibliografici emersi
-13. Cosa manca e prossimi passi
-14. Come usare questo documento per la tesi
+12. Fase 11 — L'EnsembleStrategy
+13. Riferimenti bibliografici emersi
+14. Cosa manca e prossimi passi
+15. Come usare questo documento per la tesi
 
 ---
 
@@ -1050,7 +1051,149 @@ Capitolo 6 (discussione dei risultati sperimentali).
 
 ---
 
-# 12. Riferimenti bibliografici emersi
+# 12. Fase 11 — L'EnsembleStrategy
+
+## 12.1 La motivazione
+
+Dopo aver validato singolarmente KS e ADWIN, è emersa la richiesta di
+farli **lavorare in parallelo sullo stesso stream** — non come esperimenti
+separati, ma come parte di un unico meccanismo di detection che aggreghi
+i loro verdetti. Questo per due motivi:
+
+1. **Argomento architetturale**: dimostrare concretamente che il framework
+   supporta l'ensemble come naturale estensione del Strategy Pattern.
+2. **Argomento operativo**: in un sistema MLOps reale, l'utente può
+   preferire un allarme "confermato da più algoritmi" a un allarme
+   generato da uno solo (specie se soggetto a rumore).
+
+## 12.2 La discussione preliminare al design
+
+Prima di implementare è stato chiarito un punto importante: l'ensemble
+**è una strategia, non un detector**. Sta al livello 1 dell'architettura,
+esattamente come KS e ADWIN. Il tipo di drift che viene monitorato
+(feature, prediction, concept) è determinato dal detector esterno che
+usa l'ensemble, non dall'ensemble in sé.
+
+Questa scelta ha una conseguenza importante: la stessa `EnsembleStrategy`
+funziona automaticamente dentro qualunque detector esistente
+(`FeatureDriftDetector`, `PredictionDriftDetector`, `ConceptDriftDetector`)
+**senza modifiche al codice di orchestrazione**. Sostituzione di
+`strategy_cls=KSStrategy` con `strategy_cls=EnsembleStrategy` — nient'altro.
+
+## 12.3 Il design dell'interfaccia
+
+L'ensemble deve poter contenere strategie con **parametri diversi**
+(es. `window_size=200` per KS, `delta=0.002` per ADWIN). Il meccanismo
+`**strategy_kwargs` usato dai detector esistenti non basta perché passa
+un solo dict di parametri.
+
+**Decisione**: l'ensemble riceve una lista di **coppie (classe, kwargs)**:
+
+```python
+strategy_specs = [
+    (KSStrategy, {"window_size": 200, "alpha": 0.05}),
+    (ADWINStrategy, {"delta": 0.002}),
+]
+```
+
+Internamente istanzia le strategie chiamando `cls(**kwargs)` per ogni
+coppia. Semplice, esplicito, self-documenting.
+
+## 12.4 Le regole di aggregazione
+
+Sono state implementate tre regole:
+
+- **OR**: drift globale se almeno una strategia segnala. La più permissiva.
+- **AND**: drift globale solo se tutte segnalano. La più conservativa.
+- **MAJORITY**: drift se più della metà delle strategie segnala.
+
+**Nota tecnica emersa**: con 2 strategie soltanto, MAJORITY equivale ad
+AND (serve almeno 2 su 2 per superare la metà). Il vero valore della
+regola MAJORITY emergerà quando avremo 3+ strategie (es. ADWIN + DDM +
+Page-Hinkley per il concept drift). Per intanto è stata implementata la
+logica generica, ma i test su Bernoulli confrontano solo OR e AND.
+
+## 12.5 La gestione dei "punti sottili"
+
+Alcune decisioni implementative importanti prese durante lo sviluppo:
+
+- **Score aggregato**: KS restituisce un p-value, ADWIN una stima della
+  media — grandezze non comparabili. L'ensemble mette `score=None` nel
+  verdetto aggregato e i singoli score dentro `metadata`.
+- **Warming up**: KS ha una fase di warming up (~400 update prima che il
+  test possa girare); ADWIN parte subito. L'ensemble tratta il
+  `warming_up=False` di KS come "no drift signal", così non blocca il
+  primo impulso di ADWIN.
+- **Reset**: `reset()` propaga a cascata su tutte le sotto-strategie.
+- **Metadata ricco**: il `DriftResult` finale contiene i verdetti
+  individuali di ciascuna strategia più i loro score. Utile per debug e
+  per la discussione in tesi.
+
+## 12.6 Il primo test su Bernoulli
+
+**Setup**: 3 feature Bernoulli sintetiche (stessa scena di sempre:
+`f0_stable`, `f1_drift`, `f2_stable`), configurazione corrente da `.env`
+(`n=1000`, `drift_point=500`, `window=100`). Due detector in parallelo,
+identici in tutto tranne che nella regola di aggregazione (OR e AND).
+
+**Risultati**:
+
+| Regola | Segnalazioni totali | Primo drift | Ultimo drift |
+|---|---|---|---|
+| OR | 439 | t=561 | t=999 |
+| AND | 1 | t=575 | t=575 |
+
+**Il primo drift OR** (t=561) è il momento in cui KS inizia a segnalare —
+ADWIN non concorda ancora, ma OR scatta comunque.
+
+**Il primo (e unico) drift AND** (t=575) è il momento in cui **anche
+ADWIN** produce il suo impulso singolo. In quel momento KS sta già
+segnalando da 14 passi, quindi la doppia condizione è soddisfatta.
+
+## 12.7 Interpretazione — un insight per la tesi
+
+Il confronto OR/AND su questa configurazione mostra **come cambia il
+significato operativo del sistema** al variare della regola:
+
+- **OR (439 segnali)** — di fatto un "duplicato del KS" perché KS domina
+  quantitativamente. Utile se si vuole massimizzare la sensibilità.
+- **AND (1 segnale)** — funziona come **conferma del segnale a impulso di
+  ADWIN via consenso con KS**. Ottimo per scenari con basso tolleranza ai
+  falsi positivi: l'impulso di ADWIN suggerisce "qualcosa è cambiato", e
+  KS conferma "confermo, la distribuzione è diversa".
+
+**Argomento tesi**: la regola di aggregazione non è un semplice
+parametro tecnico. **Cambia il ruolo epistemologico** del sistema di
+detection — da "cerca qualsiasi indizio di drift" (OR) a "richiedi
+consenso fra prospettive statistiche diverse" (AND). Questo apre
+riflessioni interessanti nel capitolo di validazione sperimentale.
+
+## 12.8 Implicazioni architetturali
+
+Il fatto che l'ensemble sia stato implementato **senza toccare** il
+codice di `FeatureDriftDetector`, `KSStrategy`, `ADWINStrategy` o
+`BaseDriftDetector` è la prova più forte fatta finora del valore
+architetturale del Strategy Pattern. È un caso didattico ottimo:
+
+- Prima abbiamo aggiunto ADWIN senza modificare KS o il detector
+- Poi abbiamo aggiunto detector per prediction e concept drift
+- Ora abbiamo aggiunto un meccanismo di aggregazione multi-strategia
+
+Ognuno di questi step è un'estensione del framework che **non ha
+richiesto refactoring** di quanto già esistente. Materiale forte per la
+discussione dei principi di design nel Capitolo 3.
+
+## 12.9 Cosa manca su questo fronte
+
+- **Test su ELEC2** per vedere il comportamento su dati reali (previsto)
+- **Test dei tre detector con ensemble** (feature + prediction + concept
+  su ELEC2) per validare l'universalità della strategia
+- **Ensemble a 3+ strategie** quando saranno implementati DDM, EDDM,
+  Page-Hinkley — a quel punto la regola MAJORITY diventa non banale
+
+---
+
+# 13. Riferimenti bibliografici emersi
 
 Paper e libri effettivamente discussi o citati durante il lavoro:
 
@@ -1097,9 +1240,9 @@ Paper e libri effettivamente discussi o citati durante il lavoro:
 
 ---
 
-# 13. Cosa manca e prossimi passi
+# 14. Cosa manca e prossimi passi
 
-## 13.1 Componenti architetturali non ancora implementati
+## 14.1 Componenti architetturali non ancora implementati
 
 - **`DriftMonitoringService`**: l'orchestratore centrale che collega
   modello e detector in un flusso unificato. Attualmente esiste solo
@@ -1107,8 +1250,9 @@ Paper e libri effettivamente discussi o citati durante il lavoro:
 - **Strategie aggiuntive**: Jensen-Shannon Divergence (per feature e
   prediction drift), DDM e Page-Hinkley (per concept drift come
   alternative ad ADWIN).
+- ~~**EnsembleStrategy**~~ ✅ Implementata il 2026-07-29. Vedi Fase 11.
 
-## 13.2 Esperimenti mancanti
+## 14.2 Esperimenti mancanti
 
 - **Sweep dei parametri**: usare la parametrizzazione `.env` per
   esplorare come cambiano i risultati al variare di `window_size`,
@@ -1117,13 +1261,15 @@ Paper e libri effettivamente discussi o citati durante il lavoro:
 - ~~**Rilancio dei Bernoulli con nuova configurazione**~~ ✅ Fatto il
   2026-07-29 con configurazione modificata (`n=1000`, `drift_point=500`,
   `KS_WINDOW_SIZE=100`). Vedi Sezione 11.4.
+- **Ensemble su ELEC2**: test dell'ensemble sui tre detector (Feature,
+  Prediction, Concept) su dati reali, in linea con la Fase 11.
 - **Secondo dataset reale**: Airlines o Forest Cover Type, per
   validare che i risultati di ELEC2 siano generalizzabili.
 - **Modello diverso**: provare oltre a Naive Bayes anche un modello
   più complesso (es. Random Forest, Logistic Regression) per verificare
   la model-agnosticità in modo empirico.
 
-## 13.3 Integrazione MLOps
+## 14.3 Integrazione MLOps
 
 Ancora tutta da fare, prevista per le fasi finali del progetto:
 - Integrazione con MLflow per il tracking degli esperimenti
@@ -1131,7 +1277,7 @@ Ancora tutta da fare, prevista per le fasi finali del progetto:
 - Containerizzazione con Docker
 - Design della pipeline end-to-end con trigger di retraining
 
-## 13.4 Redazione tesi
+## 14.4 Redazione tesi
 
 - **Capitolo 1**: già scritto (`thesis/chapter1_introduzione.tex`)
 - **Capitolo 2-8**: da scrivere, con materiale già presente in
@@ -1139,9 +1285,9 @@ Ancora tutta da fare, prevista per le fasi finali del progetto:
 
 ---
 
-# 14. Come usare questo documento per la tesi
+# 15. Come usare questo documento per la tesi
 
-## 14.1 Struttura dei file di supporto disponibili
+## 15.1 Struttura dei file di supporto disponibili
 
 Il progetto contiene già una serie di documenti che coprono aspetti
 diversi del lavoro:
@@ -1164,7 +1310,7 @@ diversi del lavoro:
 - **`HANDOFF.md`** — sintesi essenziale del progetto per riprendere in
   chat future
 
-## 14.2 Come combinare i documenti quando si scrive la tesi
+## 15.2 Come combinare i documenti quando si scrive la tesi
 
 Ordine consigliato di consultazione quando si scrive un capitolo:
 
@@ -1176,7 +1322,7 @@ Ordine consigliato di consultazione quando si scrive un capitolo:
 4. **`docs/adwin_overview.md`** e **`results/analisi_risultati.md`**
    per approfondimenti specifici quando serve
 
-## 14.3 Se dai questo file a un LLM per scrivere
+## 15.3 Se dai questo file a un LLM per scrivere
 
 Se questo documento viene passato a un LLM per assistere nella
 scrittura:
@@ -1196,7 +1342,7 @@ scrittura:
 6. Il **caso `vicprice`** è il momento più memorabile — dedicare
    uno spazio adeguato nel capitolo di validazione sperimentale
 
-## 14.4 Cose che l'LLM deve evitare
+## 15.4 Cose che l'LLM deve evitare
 
 - **Non inventare risultati** che non sono qui documentati
 - **Non usare toni troppo enfatici** (l'utente preferisce prosa
