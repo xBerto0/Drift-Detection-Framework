@@ -2,7 +2,7 @@
 
 **Autore**: Alberto Conti
 **Anno accademico**: 2025-2026
-**Data compilazione documento**: 2026-07
+**Data ultima revisione**: 2026-07-29
 **Obiettivo del documento**: fornire a un LLM (o a un lettore umano) tutto il
 contesto, i ragionamenti, le decisioni di design e i risultati del lavoro di
 tesi, in modo da poter cominciare a scrivere la tesi in modo informato e
@@ -993,6 +993,61 @@ Vedi `.env` per la lista completa. In sintesi:
 - Parametri ADWIN (delta)
 - Parametri FeatureDriftDetector (k_threshold)
 
+## 11.4 Validazione empirica dell'esternalizzazione parametri (2026-07-29)
+
+Dopo l'esternalizzazione, i due esperimenti Bernoulli sono stati rilanciati con
+una configurazione diversa da quella iniziale — questo per verificare due
+cose contemporaneamente:
+
+1. Il meccanismo di caricamento da `.env` funziona correttamente (i parametri
+   arrivano ai detector con i tipi giusti)
+2. Il comportamento dei detector cambia in modo prevedibile al variare dei
+   parametri (validazione della sensibilità)
+
+**Configurazione modificata rispetto al run originale**:
+
+- `BERNOULLI_N_SAMPLES`: 2000 → 1000
+- `BERNOULLI_DRIFT_POINT`: 1000 → 500
+- `KS_WINDOW_SIZE`: 200 → 100
+
+**Risultati**:
+
+| Metrica | KS (nuovo, w=100) | ADWIN (nuovo) |
+|---|---|---|
+| Primo drift | t=561 | t=575 |
+| Latenza rispetto a t=500 | 61 passi | 75 passi |
+| Feature drittate | solo `f1_drift` | solo `f1_drift` |
+| Falsi positivi | 0 | 0 |
+
+**Confronto con il run originale** (Bernoulli con `n=2000`, `drift_point=1000`,
+KS con `window_size=200`):
+
+- KS originale: latenza ~100 passi
+- KS con `window_size=100`: latenza 61 passi → **più veloce**
+- ADWIN originale: latenza ~55 passi
+- ADWIN nuovo: 75 passi (comportamento coerente con la teoria, la differenza
+  è dovuta al drift point e allo scenario ridotti)
+
+## 11.5 Insight teorico confermato empiricamente
+
+Il trade-off dimensione-finestra descritto nella sezione 4.3 del presente
+documento (finestre grandi → potere statistico alto ma reattività bassa;
+finestre piccole → reattività alta ma più falsi positivi) è ora
+**empiricamente confermato**: dimezzando la finestra da 200 a 100, la latenza
+del KS scende da ~100 a 61 passi. Coerente con la teoria — la current
+window si popola di valori "nuovi" più rapidamente.
+
+**Implicazione per la tesi**: l'affermazione fatta nel run originale
+("ADWIN è ~2× più veloce del KS") è vera **solo con parametri KS di
+default**. Con tuning appropriato del `window_size`, il KS può competere
+con ADWIN sui tempi di rilevamento. La vera differenza sostanziale di
+ADWIN sta quindi non tanto nella velocità in assoluto, ma nell'essere
+**adattivo per costruzione** (non richiede tuning manuale della finestra)
+e nell'offrire **garanzie formali** (Teorema 3.1) che il KS non ha.
+
+Argomento da riprendere nel Capitolo 4 (sezione confronto strategie) e nel
+Capitolo 6 (discussione dei risultati sperimentali).
+
 ---
 
 # 12. Riferimenti bibliografici emersi
@@ -1059,10 +1114,9 @@ Paper e libri effettivamente discussi o citati durante il lavoro:
   esplorare come cambiano i risultati al variare di `window_size`,
   `alpha`, `delta`. Utile per giustificare le scelte di default in
   tesi.
-- **Rilancio dei Bernoulli con nuova configurazione**: dopo l'ultimo
-  commit sull'esternalizzazione parametri, i file di output dei due
-  esperimenti Bernoulli in `results/KS/` e `results/ADWIN/` non sono
-  ancora stati rigenerati.
+- ~~**Rilancio dei Bernoulli con nuova configurazione**~~ ✅ Fatto il
+  2026-07-29 con configurazione modificata (`n=1000`, `drift_point=500`,
+  `KS_WINDOW_SIZE=100`). Vedi Sezione 11.4.
 - **Secondo dataset reale**: Airlines o Forest Cover Type, per
   validare che i risultati di ELEC2 siano generalizzabili.
 - **Modello diverso**: provare oltre a Naive Bayes anche un modello

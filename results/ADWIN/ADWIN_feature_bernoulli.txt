@@ -1,0 +1,27 @@
+======================================================================
+Esperimento: ADWIN Feature Drift su Bernoulli sintetica
+Data: 2026-07-29 19:26:59
+======================================================================
+
+Configurazione:
+  Scenario: Figura 2 di Bifet & Gavalda 2006 (cambio brusco al passo 500)
+  Numero campioni: 1000
+  Numero feature: 3
+  f0_stable: Bernoulli(p=0.2) per tutti i passi
+  f1_drift : Bernoulli(p=0.8) fino a t=500, poi Bernoulli(p=0.4)
+  f2_stable: Bernoulli(p=0.5) per tutti i passi
+  Seed base: 42
+
+  Detector: FeatureDriftDetector(ADWINStrategy)
+  Parametri: delta=0.002, k=1
+
+----------------------------------------------------------------------
+Risultati
+----------------------------------------------------------------------
+Numero totale di segnali di drift: 1
+Primo segnale al passo t = 575
+  Feature drittate: ['f1_drift']
+  Ritardo rispetto al cambio reale (t=500): 75 passi
+
+Segnali per feature:
+  f1_drift: 1 volte
