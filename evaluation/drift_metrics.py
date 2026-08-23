@@ -221,3 +221,48 @@ def aggrega(lista_metriche):
             1 for m in lista_metriche if m.n_falsi_allarmi > 0
         ),
     }
+
+
+def conta_episodi(segnalazioni, inizio=0):
+    """Conta i blocchi contigui di verdetto True, restituendo anche la durata.
+
+    Si differenzia da `estrai_eventi` in un caso preciso: se il verdetto e' gia'
+    True nell'istante in cui la valutazione comincia, non esiste alcun fronte di
+    salita da registrare, e `estrai_eventi` restituisce correttamente una lista
+    vuota. Su uno stream sintetico la situazione non si presenta, perche' il
+    drift arriva sempre dopo una fase stazionaria. Su un dataset reale invece
+    accade, e riportare "0 episodi" sarebbe fuorviante: il detector non e'
+    silenzioso, e' permanentemente in allarme.
+
+    Restituisce un dizionario con:
+        n_episodi        blocchi contigui di True (uno gia' aperto conta 1)
+        gia_in_drift     True se il verdetto era gia' True a `inizio`
+        passi_in_drift   totale dei passi con verdetto True
+        durata_media     lunghezza media di un episodio, in passi
+        frazione_tempo   quota dei passi valutati trascorsa in stato di drift
+    """
+    durate = []
+    corrente = 0
+    gia_in_drift = False
+
+    for t in range(inizio, len(segnalazioni)):
+        if segnalazioni[t]:
+            if corrente == 0 and t == inizio:
+                gia_in_drift = True
+            corrente += 1
+        elif corrente > 0:
+            durate.append(corrente)
+            corrente = 0
+    if corrente > 0:
+        durate.append(corrente)
+
+    valutati = max(1, len(segnalazioni) - inizio)
+    passi = sum(durate)
+
+    return {
+        "n_episodi": len(durate),
+        "gia_in_drift": gia_in_drift,
+        "passi_in_drift": passi,
+        "durata_media": (passi / len(durate)) if durate else 0.0,
+        "frazione_tempo": passi / valutati,
+    }

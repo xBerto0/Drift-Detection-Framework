@@ -1,0 +1,9 @@
+tipo_drift,strategia,passi_in_drift,percentuale_passi,episodi,durata_media_episodio,gia_in_drift_allinizio,primo_fronte
+feature,KS,44612,99.55,1,44612.0,True,
+feature,ADWIN,556,1.24,556,1.0,False,755
+prediction,KS,44403,99.09,4,11100.8,False,702
+prediction,ADWIN,2,0.0,2,1.0,False,723
+concept,ADWIN,66,0.15,66,1.0,False,1619
+concept,DDM,12,0.03,12,1.0,False,1219
+concept,PageHinkley,24,0.05,24,1.0,False,1624
+concept,Ensemble-MAJORITY,1,0.0,1,1.0,False,22547

@@ -1,0 +1,17 @@
+strategia,feature,passi_in_drift,percentuale_passi,episodi,durata_media_episodio,gia_in_drift_allinizio
+KS,date,44612,99.55,1,44612.0,True
+KS,day,39425,87.98,134,294.2,True
+KS,period,0,0.0,0,0.0,False
+KS,nswprice,43778,97.69,43,1018.1,True
+KS,nswdemand,36129,80.62,206,175.4,True
+KS,vicprice,27869,62.19,1,27869.0,False
+KS,vicdemand,27869,62.19,1,27869.0,False
+KS,transfer,27869,62.19,1,27869.0,False
+ADWIN,date,11,0.02,11,1.0,False
+ADWIN,day,465,1.04,465,1.0,False
+ADWIN,period,0,0.0,0,0.0,False
+ADWIN,nswprice,10,0.02,10,1.0,False
+ADWIN,nswdemand,45,0.1,45,1.0,False
+ADWIN,vicprice,0,0.0,0,0.0,False
+ADWIN,vicdemand,72,0.16,72,1.0,False
+ADWIN,transfer,69,0.15,69,1.0,False
