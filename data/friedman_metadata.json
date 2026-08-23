@@ -1,0 +1,66 @@
+{
+  "lea": {
+    "file": "friedman_lea.csv",
+    "drift_type": "lea",
+    "descrizione": "Local Expanding Abrupt drift (tre cambi bruschi locali)",
+    "n_samples": 20000,
+    "seed": 42,
+    "drift_positions": [
+      5000,
+      10000,
+      15000
+    ],
+    "transition_window": 0,
+    "n_features": 10,
+    "feature_rilevanti": [
+      "x0",
+      "x1",
+      "x2",
+      "x3",
+      "x4"
+    ],
+    "target": "y"
+  },
+  "gra": {
+    "file": "friedman_gra.csv",
+    "drift_type": "gra",
+    "descrizione": "Global Recurring Abrupt drift (il concetto iniziale ritorna)",
+    "n_samples": 20000,
+    "seed": 42,
+    "drift_positions": [
+      7000,
+      14000
+    ],
+    "transition_window": 0,
+    "n_features": 10,
+    "feature_rilevanti": [
+      "x0",
+      "x1",
+      "x2",
+      "x3",
+      "x4"
+    ],
+    "target": "y"
+  },
+  "gsg": {
+    "file": "friedman_gsg.csv",
+    "drift_type": "gsg",
+    "descrizione": "Global Slow Gradual drift (transizione lenta di 1000 campioni)",
+    "n_samples": 20000,
+    "seed": 42,
+    "drift_positions": [
+      7000,
+      14000
+    ],
+    "transition_window": 1000,
+    "n_features": 10,
+    "feature_rilevanti": [
+      "x0",
+      "x1",
+      "x2",
+      "x3",
+      "x4"
+    ],
+    "target": "y"
+  }
+}

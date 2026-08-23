@@ -40,3 +40,30 @@ ADWIN_DELTA = float(os.getenv("ADWIN_DELTA", 0.002))
 
 # --- FeatureDriftDetector ---
 FEATURE_K_THRESHOLD = int(os.getenv("FEATURE_K_THRESHOLD", 1))
+
+
+# --- Strategia DDM ---
+DDM_WARM_START = int(os.getenv("DDM_WARM_START", 200))
+DDM_WARNING_THRESHOLD = float(os.getenv("DDM_WARNING_THRESHOLD", 2.0))
+DDM_DRIFT_THRESHOLD = float(os.getenv("DDM_DRIFT_THRESHOLD", 3.0))
+
+
+# --- Strategia Page-Hinkley ---
+PH_MIN_INSTANCES = int(os.getenv("PH_MIN_INSTANCES", 30))
+PH_DELTA = float(os.getenv("PH_DELTA", 0.005))
+PH_THRESHOLD = float(os.getenv("PH_THRESHOLD", 50.0))
+PH_ALPHA = float(os.getenv("PH_ALPHA", 0.9999))
+PH_MODE = os.getenv("PH_MODE", "up")
+
+
+# --- Dataset Friedman (regressione) ---
+DATASET_FRIEDMAN_LEA_PATH = os.getenv(
+    "DATASET_FRIEDMAN_LEA_PATH", "data/friedman_lea.csv"
+)
+DATASET_FRIEDMAN_GRA_PATH = os.getenv(
+    "DATASET_FRIEDMAN_GRA_PATH", "data/friedman_gra.csv"
+)
+DATASET_FRIEDMAN_GSG_PATH = os.getenv(
+    "DATASET_FRIEDMAN_GSG_PATH", "data/friedman_gsg.csv"
+)
+FRIEDMAN_TRAIN_SIZE = int(os.getenv("FRIEDMAN_TRAIN_SIZE", 1000))

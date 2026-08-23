@@ -4,23 +4,46 @@ from detectors.base_detector import BaseDriftDetector
 from results.drift_result import DriftResult
 
 
+def errore_binario(y_pred, y_true) -> float:
+    """Errore 0/1 per la classificazione: 1 se il modello ha sbagliato."""
+    return 0.0 if y_pred == y_true else 1.0
+
+
+def errore_assoluto(y_pred, y_true) -> float:
+    """Errore assoluto per la regressione: |y_true - y_pred|."""
+    return abs(float(y_true) - float(y_pred))
+
+
 class ConceptDriftDetector(BaseDriftDetector):
     """Monitora lo stream degli errori del modello con una strategia.
 
-    Riceve la coppia (y_pred, y_true) e calcola internamente l'errore
-    binario (1 se il modello ha sbagliato, 0 altrimenti), che viene poi
-    passato alla strategia sottostante.
+    Riceve la coppia (y_pred, y_true), calcola internamente l'errore e lo
+    passa alla strategia sottostante.
+
+    Il modo in cui l'errore viene calcolato dipende dal tipo di problema, ed e'
+    per questo configurabile tramite il parametro `error_fn`:
+
+    - CLASSIFICAZIONE: `errore_binario` (default) produce uno stream di 0/1.
+      E' il formato richiesto da DDM, ed e' gestito nativamente anche da ADWIN.
+    - REGRESSIONE: `errore_assoluto` produce uno stream continuo e non
+      limitato. DDM non e' applicabile in questo caso; la strategia adatta e'
+      PageHinkleyStrategy.
+
+    Il default resta l'errore binario per non modificare il comportamento degli
+    esperimenti di classificazione gia' esistenti.
     """
 
-    def __init__(self, strategy_cls, **strategy_kwargs):
+    def __init__(self, strategy_cls, error_fn=errore_binario, **strategy_kwargs):
         super().__init__(detector_name="ConceptDriftDetector",
                          drift_type="concept")
         self.strategy = strategy_cls(**strategy_kwargs)
+        self.error_fn = error_fn
 
     def update(self, y_pred, y_true) -> None:
-        # Calcolo dell'errore binario.
-        error = 0.0 if y_pred == y_true else 1.0
-        self.strategy.update(error)
+        # Il calcolo dell'errore e' delegato alla funzione configurata, cosi'
+        # lo stesso detector serve sia la classificazione sia la regressione.
+        errore = self.error_fn(y_pred, y_true)
+        self.strategy.update(errore)
 
     def detect(self) -> DriftResult:
         # Legge il verdetto della strategia e riclassifica il tipo di drift.
