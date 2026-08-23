@@ -32,8 +32,37 @@ nuova strategia richiede una sola classe).
   (via `scipy.stats.ks_2samp`)
 - **ADWINStrategy** — algoritmo ADWIN a finestra adattiva
   (via `river.drift.ADWIN`)
+- **DDMStrategy** — Drift Detection Method, error-based supervisionato
+  (via `river.drift.binary.DDM`). Espone il livello di *warning*.
+- **PageHinkleyStrategy** — test sequenziale CUSUM su stream continui non
+  limitati (via `river.drift.PageHinkley`). E' la strategia usata per il
+  concept drift sui modelli di regressione.
+- **EnsembleStrategy** — aggrega piu' strategie sullo stesso stream con
+  regole OR, AND o MAJORITY.
 
-Entrambe le strategie sono intercambiabili nei detector.
+Tutte le strategie sono intercambiabili nei detector.
+
+## Validazione sperimentale
+
+Il protocollo di valutazione confronta le strategie su stream sintetici con
+drift noto per costruzione, misurando **latenza di rilevamento**, **tasso di
+falsi allarmi** e **tasso di mancate rilevazioni** su piu' ripetizioni.
+
+```powershell
+# Matrice completa: strategia x tipo di drift x 20 seed
+python -m evaluation.runner_sintetici
+
+# Figure per la tesi (PDF vettoriale in thesis/figures/)
+python -m evaluation.plots
+```
+
+I risultati finiscono in `results/sintetici/` come CSV e JSON.
+
+## Test
+
+```powershell
+pytest tests/ -v
+```
 
 ## Struttura del progetto
 
