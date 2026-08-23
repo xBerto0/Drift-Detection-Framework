@@ -1,0 +1,137 @@
+{
+  "generato_il": "2026-08-23T17:10:15",
+  "dataset": "data/electricity-normalized.csv",
+  "n_campioni_totali": 45312,
+  "n_campioni_streaming": 44812,
+  "train_size": 500,
+  "inizio_valutazione": 200,
+  "accuracy_iniziale": 0.85,
+  "accuracy_finale": 0.534,
+  "accuracy_minima": 0.429,
+  "accuracy_media": 0.583378321641156,
+  "n_warning_ddm": 4599,
+  "anomalie_qualita_dataset": [
+    {
+      "feature": "date",
+      "fine_regione_costante": 48,
+      "quota_costante": 0.1,
+      "valore_costante": 0.0,
+      "media_dopo": 0.499609,
+      "std_dopo": 0.340096
+    },
+    {
+      "feature": "day",
+      "fine_regione_costante": 48,
+      "quota_costante": 0.1,
+      "valore_costante": 2.0,
+      "media_dopo": 4.005302,
+      "std_dopo": 1.998667
+    },
+    {
+      "feature": "vicprice",
+      "fine_regione_costante": 17424,
+      "quota_costante": 38.5,
+      "valore_costante": 0.003467,
+      "media_dopo": 0.003467,
+      "std_dopo": 0.013018
+    },
+    {
+      "feature": "vicdemand",
+      "fine_regione_costante": 17424,
+      "quota_costante": 38.5,
+      "valore_costante": 0.422915,
+      "media_dopo": 0.422915,
+      "std_dopo": 0.154189
+    },
+    {
+      "feature": "transfer",
+      "fine_regione_costante": 17424,
+      "quota_costante": 38.5,
+      "valore_costante": 0.414912,
+      "media_dopo": 0.554017,
+      "std_dopo": 0.175439
+    }
+  ],
+  "detector": [
+    {
+      "tipo_drift": "feature",
+      "strategia": "KS",
+      "passi_in_drift": 44612,
+      "percentuale_passi": 99.55,
+      "episodi": 1,
+      "durata_media_episodio": 44612.0,
+      "gia_in_drift_allinizio": true,
+      "primo_fronte": null
+    },
+    {
+      "tipo_drift": "feature",
+      "strategia": "ADWIN",
+      "passi_in_drift": 556,
+      "percentuale_passi": 1.24,
+      "episodi": 556,
+      "durata_media_episodio": 1.0,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 755
+    },
+    {
+      "tipo_drift": "prediction",
+      "strategia": "KS",
+      "passi_in_drift": 44403,
+      "percentuale_passi": 99.09,
+      "episodi": 4,
+      "durata_media_episodio": 11100.8,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 702
+    },
+    {
+      "tipo_drift": "prediction",
+      "strategia": "ADWIN",
+      "passi_in_drift": 2,
+      "percentuale_passi": 0.0,
+      "episodi": 2,
+      "durata_media_episodio": 1.0,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 723
+    },
+    {
+      "tipo_drift": "concept",
+      "strategia": "ADWIN",
+      "passi_in_drift": 66,
+      "percentuale_passi": 0.15,
+      "episodi": 66,
+      "durata_media_episodio": 1.0,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 1619
+    },
+    {
+      "tipo_drift": "concept",
+      "strategia": "DDM",
+      "passi_in_drift": 12,
+      "percentuale_passi": 0.03,
+      "episodi": 12,
+      "durata_media_episodio": 1.0,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 1219
+    },
+    {
+      "tipo_drift": "concept",
+      "strategia": "PageHinkley",
+      "passi_in_drift": 24,
+      "percentuale_passi": 0.05,
+      "episodi": 24,
+      "durata_media_episodio": 1.0,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 1624
+    },
+    {
+      "tipo_drift": "concept",
+      "strategia": "Ensemble-MAJORITY",
+      "passi_in_drift": 1,
+      "percentuale_passi": 0.0,
+      "episodi": 1,
+      "durata_media_episodio": 1.0,
+      "gia_in_drift_allinizio": false,
+      "primo_fronte": 22547
+    }
+  ]
+}

@@ -8,7 +8,7 @@ Lancio dalla radice del progetto:
     pytest tests/ -v
 """
 
-from evaluation.drift_metrics import aggrega, estrai_eventi, valuta
+from evaluation.drift_metrics import aggrega, conta_episodi, estrai_eventi, valuta
 
 
 # ---------------------------------------------------------------------------
@@ -125,3 +125,36 @@ def test_aggregazione_su_piu_seed():
 
 def test_aggregazione_lista_vuota():
     assert aggrega([]) == {}
+
+
+# ---------------------------------------------------------------------------
+# conta_episodi: blocchi contigui, incluso uno gia' aperto
+# ---------------------------------------------------------------------------
+
+def test_conta_episodi_blocchi_separati():
+    verdetti = [False] * 3 + [True] * 5 + [False] * 2 + [True] * 4
+    r = conta_episodi(verdetti)
+    assert r["n_episodi"] == 2
+    assert r["gia_in_drift"] is False
+    assert r["passi_in_drift"] == 9
+    assert r["durata_media"] == 4.5
+
+
+def test_conta_episodi_gia_in_drift_allinizio():
+    # Il caso che si presenta su ELEC2: il verdetto e' gia' True quando
+    # comincia la valutazione e non torna mai False. Non e' "zero episodi":
+    # e' un unico episodio permanente.
+    verdetti = [True] * 100
+    r = conta_episodi(verdetti, inizio=10)
+    assert r["n_episodi"] == 1
+    assert r["gia_in_drift"] is True
+    assert r["frazione_tempo"] == 1.0
+    # estrai_eventi, che cerca i fronti di salita, non ne trova nessuno.
+    assert estrai_eventi(verdetti, inizio=10) == []
+
+
+def test_conta_episodi_nessuna_segnalazione():
+    r = conta_episodi([False] * 50)
+    assert r["n_episodi"] == 0
+    assert r["frazione_tempo"] == 0.0
+    assert r["durata_media"] == 0.0
