@@ -36,14 +36,16 @@ class KSStrategy(BaseDriftDetector):
             )
 
         statistic, p_value = ks_2samp(list(self.reference), list(self.current))
-        drift = p_value < self.alpha
+        # bool() esplicito: scipy restituisce un numpy.bool_, che poi
+        # comparirebbe come 'np.True_' nei metadata e nei file JSON.
+        drift = bool(p_value < self.alpha)
 
         return DriftResult(
             detector_name=self.detector_name,
             drift_detected=drift,
             drift_type=self.drift_type,
-            score=p_value,
-            metadata={"statistic": statistic, "alpha": self.alpha},
+            score=float(p_value),
+            metadata={"statistic": float(statistic), "alpha": self.alpha},
         )
 
     def reset(self) -> None:
