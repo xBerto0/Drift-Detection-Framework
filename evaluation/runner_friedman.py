@@ -11,8 +11,11 @@ L'errore di un classificatore e' binario (0/1), e su di esso DDM e' il metodo
 elettivo. L'errore di un regressore e' |y_vero - y_predetto|, cioe' un numero
 reale positivo NON LIMITATO. Su quello stream:
 
-- DDM NON e' applicabile: assume errori bernoulliani. Il wrapper solleva
-  esplicitamente un'eccezione, invece di produrre numeri privi di significato.
+- DDM non e' applicabile NELL'IMPLEMENTAZIONE USATA: river deriva la
+  deviazione standard dalla binomiale e presuppone quindi un errore binario.
+  Il wrapper solleva un'eccezione invece di produrre numeri privi di
+  significato. Il metodo in se' non ha questo limite: Gama et al. (2004) ne
+  prospettano l'uso con qualunque funzione di perdita.
 - ADWIN e' applicabile ma fuori specifica: le garanzie del Teorema 3.1 valgono
   per variabili limitate in [0,1]. Viene incluso proprio per misurare cosa
   succede quando lo si usa fuori dalle sue ipotesi.

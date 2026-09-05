@@ -64,15 +64,19 @@ class DDMStrategy(BaseDriftDetector):
         )
 
     def update(self, value: float) -> None:
-        # DDM e' definito solo su uno stream binario di errori. Un valore
-        # diverso da 0/1 e' quasi sempre il sintomo di un uso sbagliato (per
-        # esempio DDM applicato a una feature continua), quindi lo segnaliamo
-        # esplicitamente invece di produrre risultati privi di senso.
+        # Il vincolo binario riguarda QUESTA implementazione, non il metodo.
+        # river calcola s_i = sqrt(p_i(1-p_i)/i), che presuppone un esito a due
+        # valori. Gama et al. (2004), nelle conclusioni, prospettano invece
+        # l'uso dell'algoritmo con qualunque funzione di perdita, dati valori
+        # appropriati di alpha, e riportano risultati preliminari in regressione
+        # con l'errore quadratico medio: quella generalizzazione richiederebbe
+        # pero' una diversa stima della varianza, che river non implementa.
         if value not in (0, 1, 0.0, 1.0, True, False):
             raise ValueError(
                 f"DDMStrategy accetta solo valori binari (0 = corretto, "
-                f"1 = errore), ricevuto {value!r}. Per stream continui usare "
-                f"PageHinkleyStrategy o ADWINStrategy."
+                f"1 = errore), ricevuto {value!r}. L'implementazione di river "
+                f"usa la derivazione bernoulliana della deviazione standard. "
+                f"Per stream continui usare PageHinkleyStrategy o ADWINStrategy."
             )
         self.ddm.update(int(value))
 

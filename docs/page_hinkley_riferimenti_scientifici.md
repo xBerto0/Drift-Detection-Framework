@@ -10,9 +10,28 @@ complementare a questo e non lo sostituisce.
 
 ---
 
+> ### STATO DELLE FONTI — da leggere prima del resto
+>
+> **Il paper primario non e' stato reperito.** A differenza del documento
+> gemello su DDM, riscritto a partire dal paper originale ora disponibile in
+> `Papers/`, questo documento e' ricostruito da **fonti secondarie sottoposte a
+> revisione paritaria**.
+>
+> Le formule riportate al paragrafo 2 sono citate **testualmente** da [SK17],
+> pubblicazione su rivista con revisione paritaria, e concordano con il resto
+> della letteratura consultata. Sono quindi affidabili. Cio' che manca e' la
+> possibilita' di citare Page direttamente e di riportarne l'argomentazione.
+>
+> **In tesi si puo' procedere cosi'**: citare Page (1954) come riferimento
+> canonico, che e' la prassi universale in questa letteratura, e attribuire
+> esplicitamente a [SK17] la formulazione operativa adottata. E' onesto e
+> verificabile. Recuperare il paper resta consigliabile prima della consegna.
+
+---
+
 ## Nota preliminare sulle fonti
 
-**Il paper primario non è liberamente accessibile.**
+**Il paper primario non e' liberamente accessibile.**
 
 > Page, E. S. (1954). *Continuous Inspection Schemes*. Biometrika, 41(1/2),
 > pp. 100–115. Oxford University Press.
@@ -33,9 +52,40 @@ Nella letteratura sul concept drift entrambe le varianti vengono attribuite a
 Page 1954 — così fa esplicitamente [SK17], che cita `(Page, 1954)` sia per
 CUSUM sia per PHT. Vale la pena saperlo perché è una domanda che può arrivare.
 
-Quanto segue è ricostruito da **fonti secondarie sottoposte a revisione
+### Come recuperarlo
+
+1. **JSTOR tramite il proxy della biblioteca Unipa** — via principale, gli
+   atenei coprono quasi sempre l'archivio storico di Biometrika.
+2. **Oxford Academic** (`academic.oup.com/biometrika`) con le stesse credenziali.
+3. **Prestito interbibliotecario / document delivery** della biblioteca di
+   Ingegneria: per un articolo del 1954 e' una richiesta ordinaria.
+4. Chiedere a Engineering se il loro abbonamento copre JSTOR.
+
+Cerca per **DOI `10.2307/2333009`**, non per titolo: "Continuous Inspection
+Schemes" restituisce molti falsi positivi.
+
+### Un fatto verificato leggendo Gama et al. 2004
+
+Il paper su DDM, ora in `Papers/`, e' stato letto integralmente per il documento
+gemello. **La sua bibliografia non contiene alcun riferimento a Page (1954)**:
+DDM non deriva dal CUSUM e non lo cita.
+
+Le due linee sono quindi **genealogie indipendenti**, riunite solo dalla
+tassonomia della letteratura successiva:
+
+- **Page-Hinkley** nasce dall'analisi sequenziale e dal controllo qualita'
+  industriale (1954), ed e' importato nel machine learning decenni dopo;
+- **DDM** nasce dentro il machine learning (2004) e cita come supporto teorico
+  il manuale di Mitchell.
+
+E' una precisazione che regge in sede di discussione: mostra che la tassonomia
+del Capitolo 2 e' stata verificata sulle fonti, non copiata da una survey.
+
+---
+
+Quanto segue e' ricostruito da **fonti secondarie sottoposte a revisione
 paritaria che descrivono formalmente l'algoritmo**, tutte verificabili e due
-delle quali già presenti in `Papers/`.
+delle quali gia' presenti in `Papers/`.
 
 ### Fonti effettivamente consultate
 
@@ -268,7 +318,36 @@ originale: la letteratura indica il compromesso, non i numeri.
 
 ---
 
-## 7. Riferimenti
+## 7. Cosa cambiera' quando il paper sara' disponibile
+
+**Le formule non cambieranno.** [SK17] le riporta esplicitamente e concordano
+con il resto della letteratura.
+
+**Quello che si aggiungera':**
+
+- la possibilita' di **citare Page direttamente** anziche' per interposta fonte;
+- il **contesto originale**: il paper del 1954 tratta di schemi di ispezione
+  continua per il controllo qualita' nella produzione industriale, non di
+  machine learning. Vale la pena verificare lo scarto fra cio' che Page scrive
+  e cio' che la letteratura ML gli attribuisce;
+- l'**analisi originale delle prestazioni**: e' verosimile che Page discuta la
+  lunghezza media di sequenza (ARL, *average run length*), il modo canonico in
+  statistica di quantificare il compromesso fra prontezza e falsi allarmi. Se
+  c'e', e' un collegamento diretto con le metriche di latenza e falsi allarmi
+  usate nel capitolo di validazione di questa tesi;
+- eventuali **condizioni di validita'** dichiarate dall'autore, che oggi si
+  possono solo desumere.
+
+**Una nota di accuratezza.** Nella letteratura sul concept drift il riferimento
+«(Page, 1954)» e' usato in modo quasi rituale: [SK17] lo cita sia per il CUSUM
+sia per il PHT, benche' il PHT sia propriamente una variante successiva.
+Scrivere che il test e' «dovuto a Page (1954)» mette in buona compagnia, ma la
+formulazione accurata e' che **il CUSUM e' di Page (1954) e la variante nota
+come Page-Hinkley si consolida con Hinkley (1971)**.
+
+---
+
+## 8. Riferimenti
 
 **Paper primari, da recuperare via accesso istituzionale**
 - Page, E. S. (1954). *Continuous Inspection Schemes*. Biometrika, 41(1/2),

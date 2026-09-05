@@ -152,9 +152,12 @@ rende implementabile il capitolo sul retraining.
    produzione con label delay, DDM segnala il drift con il ritardo con cui
    arrivano le etichette, non con la latenza dell'algoritmo.
 
-2. **Solo classificazione.** L'errore deve essere binario. Su un modello di
-   regressione l'errore è un numero reale e la modellazione Bernoulli non regge.
-   È precisamente il buco che copre Page-Hinkley.
+2. **Solo classificazione — ma è un limite dell'implementazione, non del
+   metodo.** `river` deriva `s_i` dalla binomiale e richiede quindi un errore
+   binario. Gama et al. (2004), nelle conclusioni, prospettano invece l'uso
+   dell'algoritmo con qualunque funzione di perdita e riportano risultati
+   preliminari in regressione con l'errore quadratico medio. Vedere
+   `docs/ddm_riferimenti_scientifici.md`, §5.4.
 
 3. **Rileva solo il drift che peggiora l'errore.** Se il concetto cambia ma il
    modello continua a indovinare (per fortuna o perché il cambiamento è
@@ -162,12 +165,14 @@ rende implementabile il capitolo sul retraining.
    operativo è un pregio; dal punto di vista della caratterizzazione del
    fenomeno è un limite.
 
-4. **Lento sui drift graduali.** DDM è tarato sui cambiamenti relativamente
-   bruschi del tasso di errore. Su un drift molto lento, `p_min + s_min` viene
-   aggiornato progressivamente e il test può non scattare mai — la baseline
-   "insegue" il degrado. È il problema che EDDM (Baena-García et al. 2006)
-   cerca di risolvere monitorando la *distanza fra due errori consecutivi*
-   anziché il tasso.
+4. **Lento sui drift graduali.** Su un drift molto lento, `p_min + s_min`
+   viene aggiornato progressivamente e la baseline "insegue" il degrado. È il
+   problema che EDDM (Baena-García et al. 2006) cerca di risolvere monitorando
+   la *distanza fra due errori consecutivi* anziché il tasso.
+   ⚠️ Attenzione ad attribuire questo limite al paper originale: **non lo
+   dichiara**, e include anzi un dataset a drift graduale (CIRCLES).
+   L'affermazione proviene dagli autori di EDDM. Vedere
+   `docs/ddm_riferimenti_scientifici.md`, §4.
 
 5. **Assume che il learner migliori.** L'ipotesi di partenza è un modello che
    apprende online. Nel nostro esperimento su ELEC2 il classificatore è

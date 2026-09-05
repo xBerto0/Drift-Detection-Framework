@@ -44,11 +44,11 @@ REQUISITI = {
 
 # Quali strategie hanno senso su quale tipo di drift.
 #
-# DDM lavora su uno stream binario di ERRORI e presuppone il modello di
-# Bernoulli: e' quindi applicabile al solo concept drift, e solo quando il
-# modello monitorato e' un classificatore. Sulle feature in ingresso o sulle
-# predizioni non produrrebbe risultati interpretabili, anche quando i valori
-# fossero per caso binari.
+# DDM lavora su uno stream binario di ERRORI: e' quindi applicabile al solo
+# concept drift, e solo quando il modello monitorato e' un classificatore,
+# perche' l'implementazione di river deriva la deviazione standard dalla
+# binomiale. Sulle feature in ingresso o sulle predizioni non produrrebbe
+# risultati interpretabili, anche quando i valori fossero per caso binari.
 STRATEGIE_AMMESSE = {
     "data_drift": ("ks", "adwin", "page_hinkley"),
     "prediction_drift": ("ks", "adwin", "page_hinkley"),

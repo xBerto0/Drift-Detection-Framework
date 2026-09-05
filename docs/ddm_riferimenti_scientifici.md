@@ -1,311 +1,430 @@
-# DDM — Drift Detection Method: fondamenti dalla letteratura
+# DDM — Drift Detection Method: fondamenti dal paper originale
 
-Documento di riferimento scientifico su DDM. Ogni affermazione tecnica riporta
-la fonte da cui proviene. È il materiale destinato al Capitolo 4 della tesi.
+Documento di riferimento scientifico su DDM, redatto a partire dal **paper
+primario**, letto integralmente. Ogni affermazione riporta la sezione da cui
+proviene.
 
 Per la parte pratica — integrazione nel framework, parametri esposti, risultati
-sperimentali ottenuti — vedere `docs/ddm_overview.md`, che è complementare a
-questo e non lo sostituisce.
+sperimentali ottenuti in questa tesi — vedere `docs/ddm_overview.md`, che è
+complementare e non sostituisce questo documento.
 
 ---
 
-## Nota preliminare sulle fonti
+## Fonte primaria
 
-**Il paper primario non è liberamente accessibile.**
-
-> Gama, J., Medas, P., Castillo, G., Rodrigues, P. (2004). *Learning with Drift
-> Detection*. In: Bazzan, A.L.C., Labidi, S. (eds) Advances in Artificial
+> **Gama, J., Medas, P., Castillo, G., Rodrigues, P. (2004).** *Learning with
+> Drift Detection*. In: Bazzan, A.L.C., Labidi, S. (eds) Advances in Artificial
 > Intelligence — SBIA 2004. Lecture Notes in Computer Science, vol. 3171,
 > pp. 286–295. Springer, Berlin/Heidelberg.
-> DOI: [10.1007/978-3-540-28645-5_29](https://doi.org/10.1007/978-3-540-28645-5_29)
+> DOI [10.1007/978-3-540-28645-5_29](https://doi.org/10.1007/978-3-540-28645-5_29)
 
-Lo stato di accesso è stato verificato tramite Unpaywall: `is_oa: false`,
-`oa_status: "closed"`, nessuna versione ad accesso aperto disponibile. **Va
-recuperato tramite l'accesso istituzionale Unipa a SpringerLink** (oppure
-tramite l'abbonamento aziendale di Engineering) prima della consegna della
-tesi: un capitolo che descrive DDM deve poter citare il paper originale.
+Copia in `Papers/Learning_with_Drift_Detection.pdf` (10 pagine).
+Affiliazioni degli autori: LIACC — University of Porto; Fac. Economics,
+University of Porto; University of Aveiro.
 
-Nel frattempo, quanto segue è ricostruito da **fonti secondarie sottoposte a
-revisione paritaria che descrivono formalmente l'algoritmo**, tutte verificabili
-e due delle quali già presenti in `Papers/`. Dove una formula o una definizione
-proviene da una di queste fonti, la fonte è indicata esplicitamente.
+Fonti secondarie usate solo per l'inquadramento tassonomico e per la storia
+successiva dell'algoritmo:
 
-### Fonti effettivamente consultate
+- **[SK17]** Sethi, T. S., Kantardzic, M. (2017). *On the reliable detection of
+  concept drift from streaming unlabeled data*. Expert Systems with
+  Applications, 82, 77–99. arXiv:1704.00023 — in `Papers/`
+- **[LU19]** Lu, J., Liu, A., Dong, F., Gu, F., Gama, J., Zhang, G. (2019).
+  *Learning under Concept Drift: A Review*. IEEE TKDE, 31(12), 2346–2363.
+  arXiv:2004.05785 — in `Papers/`
 
-| Sigla | Riferimento | Disponibilità |
+---
+
+## 1. L'idea centrale: il concetto di *contesto*
+
+Questo è il punto che le sintesi di terza mano perdono quasi sempre, e che
+invece organizza tutto il paper. Gli autori definiscono (§1):
+
+> **contesto**: un insieme di esempi in cui la funzione che genera gli esempi è
+> stazionaria.
+
+Il flusso di dati è assunto composto **da una successione di contesti**. Le
+transizioni fra contesti possono essere **graduali**, con passaggio morbido fra
+le distribuzioni, o **brusche**, quando la distribuzione cambia rapidamente.
+
+L'obiettivo dichiarato non è quindi "segnalare che qualcosa è cambiato", ma
+**identificare i confini fra contesti**. Gli autori sono espliciti sulla
+motivazione (§1): se si sanno identificare i contesti, si sa quale informazione
+è ormai obsoleta, e si può riapprendere il modello **usando solo l'informazione
+rilevante per il contesto attuale**.
+
+Nelle conclusioni (§5) lo riformulano in modo ancora più diretto: dal punto di
+vista pratico, ciò che il metodo fa è **scegliere l'insieme di addestramento più
+appropriato** alla distribuzione di classe corrente.
+
+> **Perché conta per questa tesi.** DDM non è nato come rilevatore di allarmi:
+> è nato come **selettore del training set**. È esattamente l'uso che ne farà
+> il capitolo sul retraining, ed è il motivo per cui è l'algoritmo giusto per
+> l'Objective 4 della proposta.
+
+---
+
+## 2. Il fondamento statistico
+
+Il paper (§3) assume che gli esempi arrivino uno alla volta, in coppie
+`(x_i, y_i)`, nel quadro dell'apprendimento **online**: a ogni passo il modello
+prende una decisione, e solo dopo l'ambiente fornisce il riscontro.
+
+Per un insieme di esempi, l'errore è una variabile casuale proveniente da
+**prove di Bernoulli**, e la distribuzione binomiale dà la forma generale della
+probabilità per la variabile che rappresenta il numero di errori in un campione
+di `n` esempi. Per ogni punto `i` della sequenza:
+
+```
+    p_i   = tasso di errore, cioe' la probabilita' di osservare False
+    s_i   = sqrt( p_i * (1 - p_i) / i )
+```
+
+### La giustificazione teorica: una precisazione
+
+Il paper afferma (§3) che la **teoria statistica garantisce** che, finché la
+distribuzione di classe è stazionaria, il tasso di errore `p_i` diminuisce al
+crescere di `i`; un aumento significativo suggerisce quindi un cambiamento nella
+distribuzione di classe e l'inadeguatezza del modello attuale.
+
+⚠️ **Il riferimento che gli autori citano a supporto è [9] = Tom Mitchell,
+*Machine Learning*, McGraw Hill, 1997** — un manuale, non un risultato PAC
+specifico.
+
+Vale la pena saperlo, perché diverse fonti secondarie — fra cui [SK17] e
+[LU19] — presentano DDM come basato sul "presupposto del modello PAC". È
+un'interpretazione ragionevole e ormai standard nella letteratura, ma **il
+paper originale non usa quella formulazione**: parla di teoria statistica in
+senso generale e cita un manuale. In tesi conviene scrivere che il fondamento è
+la decrescita attesa dell'errore in regime stazionario, notando che la
+letteratura successiva l'ha ricondotta al modello PAC.
+
+### Da dove vengono i coefficienti 2 e 3
+
+Il paper lo deriva esplicitamente, ed è la parte che le sintesi omettono
+sempre. Testualmente da §3: per valori sufficientemente grandi della dimensione
+campionaria la binomiale è bene approssimata da una **normale** con la stessa
+media e varianza; assumendo che la distribuzione di probabilità sia invariata
+quando il contesto è statico, l'**intervallo di confidenza** `1 − α/2` per `p`
+**con `n > 30` esempi** è approssimativamente `p_i ± α · s_i`, dove il
+parametro `α` dipende dal livello di confidenza.
+
+I due livelli sono quindi due intervalli di confidenza:
+
+```
+    livello di WARNING   ->  confidenza 95%  ->  alpha = 2
+                             p_i + s_i  >=  p_min + 2 * s_min
+
+    livello di DRIFT     ->  confidenza 99%  ->  alpha = 3
+                             p_i + s_i  >=  p_min + 3 * s_min
+```
+
+Il paper precisa che questi sono i livelli **usati negli esperimenti descritti**,
+non valori imposti dal metodo: `α` è un parametro.
+
+> **Nota implementativa.** La condizione `n > 30` per la validità
+> dell'approssimazione normale è, con ogni evidenza, l'origine del valore
+> predefinito `warm_start = 30` di `river.drift.binary.DDM`. È utile saperlo
+> per motivare la scelta di alzarlo a 200 negli esperimenti di questa tesi: non
+> si sta contraddicendo il paper, si sta osservando che 30 è il minimo per la
+> validità dell'approssimazione, non un valore ottimale per la stabilità della
+> baseline.
+
+### I due registri
+
+Testualmente (§3): il metodo gestisce due registri durante l'addestramento,
+`p_min` e `s_min`; ogni volta che un nuovo esempio `i` viene processato, tali
+valori sono aggiornati **quando `p_i + s_i` è minore di `p_min + s_min`**.
+
+---
+
+## 3. Il protocollo di riapprendimento, nelle parole degli autori
+
+È il cuore operativo del metodo, e il paper lo descrive in modo preciso (§3).
+
+Il livello di warning serve a **definire la dimensione ottimale della finestra
+di contesto**. Tale finestra conterrà gli esempi vecchi che appartengono già al
+nuovo contesto, più un numero minimo di esempi del vecchio contesto.
+
+Data una sequenza in cui l'errore del modello cresce raggiungendo:
+
+- il **livello di warning** all'esempio `k_w`
+- il **livello di drift** all'esempio `k_d`
+
+allora si dichiara un **nuovo contesto a partire da `k_w`**, e si induce un nuovo
+modello decisionale **usando solo gli esempi da `k_w` a `k_d`**.
+
+### La gestione dei falsi allarmi
+
+Il paper la affronta esplicitamente, ed è un dettaglio importante: può accadere
+di osservare una crescita dell'errore che raggiunge il livello di warning e poi
+**decresce**. Gli autori assumono che tali situazioni corrispondano a un **falso
+allarme**, e in quel caso **il contesto non viene cambiato**.
+
+Il warning non è quindi un allarme debole: è uno **stato reversibile**. Il
+buffer accumulato viene semplicemente scartato se il drift non si conferma.
+
+### Applicabilità
+
+Il metodo può essere applicato con qualunque algoritmo di apprendimento (§3).
+Può essere implementato **direttamente all'interno** di algoritmi online e
+incrementali, oppure **come wrapper** attorno a learner batch. Nel framework di
+questa tesi è realizzato come wrapper, coerentemente con la seconda modalità.
+
+---
+
+## 4. La validazione sperimentale originale
+
+Utile da citare nel capitolo di validazione, per confrontare le proprie
+condizioni sperimentali con quelle degli autori.
+
+### Algoritmi di apprendimento
+
+Tre, scelti per rappresentazioni deliberatamente diverse (§4): **Perceptron**
+(lineare), **rete neurale** (combinazione non lineare di attributi), **albero di
+decisione** (forma normale disgiuntiva). L'obiettivo dichiarato è mostrare
+l'**indipendenza del metodo dall'algoritmo di apprendimento**.
+
+### Gli otto dataset artificiali
+
+Tutti a due classi, 50% di esempi per classe in ogni contesto, **1000 esempi
+generati casualmente per contesto**, almeno due versioni del concetto target.
+
+| Dataset | Tipo di drift | Caratteristica |
 |---|---|---|
-| **[SK17]** | Sethi, T. S., Kantardzic, M. (2017). *On the reliable detection of concept drift from streaming unlabeled data*. Expert Systems with Applications, 82, 77–99. [arXiv:1704.00023](https://arxiv.org/abs/1704.00023) | in `Papers/`, e accesso aperto |
-| **[LU19]** | Lu, J., Liu, A., Dong, F., Gu, F., Gama, J., Zhang, G. (2019). *Learning under Concept Drift: A Review*. IEEE Transactions on Knowledge and Data Engineering, 31(12), 2346–2363. [arXiv:2004.05785](https://arxiv.org/abs/2004.05785) | in `Papers/`, e accesso aperto |
-| **[GA14]** | Gama, J., Žliobaitė, I., Bifet, A., Pechenizkiy, M., Bouchachia, A. (2014). *A Survey on Concept Drift Adaptation*. ACM Computing Surveys, 46(4), 1–37. | in `Papers/` ⚠️ vedere nota |
-| **[BG07]** | Bifet, A., Gavaldà, R. (2007). *Learning from Time-Changing Data with Adaptive Windowing*. SIAM Int. Conf. on Data Mining, pp. 443–448. | in `Papers/` |
+| SINE1 | brusco | senza rumore, 2 attributi rilevanti, `y = sin(x)` |
+| SINE2 | brusco | `y < 0.5 + 0.3·sin(3πx)` |
+| SINIRREL1 | brusco | SINE1 più 2 attributi irrilevanti |
+| SINIRREL2 | brusco | SINE2 più 2 attributi irrilevanti |
+| **CIRCLES** | **graduale** | senza rumore, quattro contesti definiti da quattro cerchi |
+| GAUSS | brusco | **con rumore**, esempi normalmente distribuiti |
+| STAGGER | brusco | attributi **simbolici**, senza rumore |
+| MIXED | brusco | attributi booleani e numerici |
 
-> ⚠️ **Nota su [GA14]**: la copia presente in `Papers/` è una versione italiana
-> di 17 pagine, mentre l'originale ACM ne conta circa 37. Non contiene alcuna
-> occorrenza di DDM. Per la bibliografia della tesi serve l'originale inglese
-> completo.
+> **Osservazione da riportare in tesi.** Il paper originale **include un caso di
+> drift graduale** (CIRCLES). L'affermazione, molto diffusa, secondo cui "DDM
+> fallisce sui drift graduali" **non proviene da Gama et al.**: proviene dalla
+> letteratura successiva, in particolare dagli autori di EDDM, riportata da
+> [SK17]. È una precisazione che vale la pena fare, perché distingue chi ha
+> letto il paper da chi ha letto le sintesi.
 
----
+### Risultati sui dataset artificiali
 
-## 1. Collocazione tassonomica
+Tasso di errore finale, con e senza rilevamento attivo (Tabella 1 del paper):
 
-[SK17] classifica i metodi di rilevamento del drift in **espliciti**
-(supervisionati) e **impliciti** (non supervisionati), e all'interno degli
-espliciti distingue tre famiglie:
+| Dataset | Perceptron | | Rete neurale | | Albero |  |
+|---|---|---|---|---|---|---|
+| | senza | **con** | senza | **con** | senza | **con** |
+| STAGGER | 0,048 | **0,029** | 0,351 | **0,002** | 0,265 | **0,016** |
+| SINE1 | 0,126 | **0,115** | 0,489 | **0,019** | 0,490 | **0,081** |
+| SINIRREL1 | 0,159 | **0,139** | 0,479 | **0,068** | 0,483 | **0,088** |
+| SINE2 | 0,271 | **0,262** | 0,492 | **0,118** | 0,477 | **0,100** |
+| SINIRREL2 | 0,281 | 0,281 | 0,477 | **0,059** | 0,485 | **0,084** |
+| MIXED | 0,100 | 0,111 | 0,240 | **0,065** | 0,491 | **0,465** |
+| GAUSS | 0,384 | 0,386 | 0,395 | **0,150** | 0,380 | **0,144** |
+| CIRCLES | 0,410 | 0,413 | 0,233 | **0,225** | 0,205 | **0,109** |
 
-| Famiglia | Metodi | Riferimenti in [SK17] |
-|---|---|---|
-| Analisi sequenziale | CUSUM, PHT, LFR | Page 1954; Wang e Abraham 2015 |
-| **Controllo statistico di processo** | **DDM**, EDDM, STEPD, EWMA | **Gama et al. 2004**; Baena-García et al. 2006; Nishida e Yamauchi 2007; Ross et al. 2012 |
-| Monitoraggio della distribuzione a finestre | ADWIN, DoD, Resampling | Bifet e Gavaldà 2007; Sobhani e Beigy 2011; Harel et al. 2014 |
+Gli autori osservano (§4.2) che il metodo è efficace con tutti gli algoritmi,
+ma che **le differenze sono più significative con la rete neurale e con
+l'albero di decisione**. Nelle conclusioni lo formulano come regola: il metodo
+è più efficace con algoritmi dotati di **maggiore capacità di rappresentare
+generalizzazioni**. Sul Perceptron, infatti, in tre casi su otto il rilevamento
+peggiora leggermente il risultato.
 
-**DDM appartiene quindi alla famiglia del controllo statistico di processo**
-(SPC), non a quella dell'analisi sequenziale a cui appartiene Page-Hinkley, né
-a quella del windowing adattivo a cui appartiene ADWIN. È la distinzione che
-giustifica la scelta di includere nel framework un rappresentante per ciascuna
-delle tre famiglie.
+### ELEC2 — lo stesso dataset usato in questa tesi
 
-Sempre secondo [SK17], le tecniche SPC monitorano l'andamento online del tasso
-di errore e rilevano scostamenti applicando idee mutuate dalle **carte di
-controllo** usate nel controllo qualità industriale.
+Il paper dedica a ELEC2 la §4.3, e le informazioni sono direttamente rilevanti.
 
----
+Il dataset proviene dal mercato elettrico australiano del New South Wales, dove
+i prezzi non sono fissi e sono determinati da domanda e offerta, aggiornati ogni
+cinque minuti. Contiene **45.312 istanze dal 7 maggio 1996 al 5 dicembre 1998**,
+ciascuna riferita a un periodo di 30 minuti, quindi **48 istanze per giorno**.
+L'etichetta di classe identifica la variazione del prezzo rispetto a una media
+mobile delle ultime 24 ore, il che rimuove l'effetto delle tendenze di lungo
+periodo.
 
-## 2. Il presupposto teorico: il modello PAC
+Gli autori riportano inoltre, citando Harries, due fatti sul dataset: la
+**stagionalità** della formazione del prezzo e la sensibilità a eventi di breve
+termine come le fluttuazioni meteorologiche; e il fatto che durante il periodo
+osservato il mercato **fu ampliato con l'inclusione di aree adiacenti**,
+consentendo di vendere l'eccesso di produzione di una regione in quella
+adiacente, con effetto di attenuazione dei prezzi estremi.
 
-Sia [SK17] sia [LU19] individuano il fondamento teorico di DDM nel **modello di
-apprendimento PAC** (Probably Approximately Correct).
+> ⚠️ **Discrepanza importante da dichiarare in tesi.** Il paper descrive ELEC2
+> come composto da **5 campi** più l'etichetta: giorno della settimana, marca
+> temporale, domanda elettrica NSW, domanda elettrica Vic, trasferimento
+> programmato fra stati. Il file usato in questa tesi,
+> `electricity-normalized.csv`, ha invece **8 feature** (`date`, `day`,
+> `period`, `nswprice`, `nswdemand`, `vicprice`, `vicdemand`, `transfer`) più la
+> classe. Si tratta della versione normalizzata ed estesa diffusa tramite
+> OpenML/MOA, non di quella descritta dagli autori. La differenza va dichiarata:
+> i risultati non sono direttamente confrontabili con quelli del paper.
+>
+> Va inoltre ricordato che l'ampliamento del mercato alle aree adiacenti,
+> menzionato dagli autori, è verosimilmente la causa della **regione costante
+> nelle feature di Victoria** individuata nell'analisi di qualità del dato di
+> questo lavoro: i dati di Victoria non esistevano prima di quell'ampliamento.
+> Il paper originale fornisce quindi la spiegazione storica dell'artefatto.
 
-Il ragionamento riportato da [SK17] è il seguente: nel modello PAC, se la
-distribuzione che genera i dati è **stazionaria**, il tasso di errore di un
-learner deve diminuire — o al più restare stabile — al crescere del numero di
-esempi osservati. Ne discende la conclusione operativa:
+Sui risultati, gli autori sono cauti in un modo che vale la pena imitare:
+**non sanno se e quando il drift avvenga**, e lo dichiarano. Costruiscono quindi
+un limite inferiore per confronto, cercando esaustivamente il segmento di
+training con la migliore prestazione sul test set — operazione che, come
+riconoscono, **non è praticabile nella realtà** perché guarda le etichette del
+test set.
 
-> un aumento significativo del tasso di errore **viola il modello PAC**, e viene
-> quindi assunto come conseguenza di un concept drift.
-> *(parafrasato da [SK17], §2.1.2)*
+| Test set | Limite inferiore | Tutti i dati | Ultimo anno | **Drift Detection** |
+|---|---|---|---|---|
+| Ultimo giorno | 0,104 | 0,187 | 0,125 | **0,104** |
+| Ultima settimana | 0,190 | 0,235 | 0,247 | **0,199** |
 
-Questo è il punto concettuale centrale, e vale la pena esplicitarlo perché è
-ciò che distingue DDM da un generico rilevatore di cambiamento di media: DDM
-**non** osserva i dati, osserva la violazione di una garanzia teorica sul
-comportamento del learner.
+Con il test a un giorno il metodo **raggiunge esattamente il limite inferiore**;
+con quello a una settimana gli si avvicina molto. Il modello viene costruito
+sugli ultimi 3.836 esempi nel primo caso e sui 3.548 più recenti nel secondo.
 
-### Conseguenza da dichiarare in tesi
+### Il controllo negativo su ADULT
 
-Il presupposto è che il learner **apprenda**. Negli esperimenti condotti in
-questo lavoro il classificatore è **statico**, addestrato una volta e mai
-aggiornato: l'ipotesi PAC di errore decrescente non è quindi soddisfatta. Il
-comportamento resta interpretabile — con un modello statico il tasso di errore
-si stabilizza presto e DDM segnala ogni peggioramento rispetto a quella
-baseline — ma la deviazione dall'assunzione originale va dichiarata
-esplicitamente.
+Gli autori eseguono una verifica che merita attenzione (§4.3, chiusura). Testano
+il metodo sul dataset **ADULT**, costruito da dati censuari raccolti in un
+singolo istante, in cui **il concetto dovrebbe essere stabile**. Usando un
+albero di decisione, **il metodo non rileva mai drift**. Gli autori lo
+qualificano come aspetto importante, perché costituisce evidenza che il metodo è
+**robusto ai falsi allarmi**.
 
----
-
-## 3. La formulazione
-
-La formulazione seguente è riportata **testualmente** in [SK17], §2.1.2.
-
-Sia `p_t` la probabilità di errore osservata al tempo `t` e `i` il numero di
-esempi visti. La deviazione standard associata è:
-
-```
-    s_t = sqrt( p_t * (1 - p_t) / i )
-```
-
-È la deviazione standard della media campionaria di una variabile di Bernoulli:
-l'esito di ciascuna predizione viene trattato come una prova bernoulliana
-(errore / non errore).
-
-L'algoritmo mantiene due registri. Citando [SK17]:
-
-> quando `p_t + s_t` raggiunge il suo valore minimo, i valori corrispondenti
-> vengono memorizzati in `p_min` e `s_min`.
-
-Le due soglie sono:
-
-```
-    p_t + s_t  >=  p_min + 2 * s_min      ->   WARNING
-    p_t + s_t  >=  p_min + 3 * s_min      ->   DRIFT
-```
-
-La stessa formulazione è confermata in modo indipendente dalla letteratura
-successiva, che descrive l'aggiornamento dei registri come effettuato quando
-`p_i + s_i < p_min + s_min`.
-
-### Perché la somma `p + s` e non il solo `p`
-
-Nessuna delle fonti consultate lo esplicita, ma la conseguenza è verificabile
-direttamente dalla formula ed è un'osservazione difendibile in sede di
-discussione: poiché `s_t` decresce come `1/sqrt(i)`, all'inizio dello stream la
-soglia è ampia e il test è prudente; man mano che si accumulano esempi la
-soglia si stringe e il test diventa più sensibile. La statistica di test
-**autoregola la propria severità in funzione della quantità di evidenza
-disponibile**.
-
-I coefficienti 2 e 3 corrispondono ai limiti di controllo classici delle carte
-SPC, cioè a circa il 95% e il 99% di confidenza sotto approssimazione normale
-della binomiale — coerentemente con la collocazione di DDM nella famiglia SPC
-data da [SK17].
+> **Da valorizzare in tesi.** È esattamente la stessa logica del controllo
+> negativo costruito in questo lavoro sui dataset Friedman, dove le feature sono
+> uniformi per costruzione e ogni segnalazione è per definizione un falso
+> positivo. Poter scrivere che il protocollo di validazione adottato replica
+> quello degli autori originali del metodo è un argomento forte.
 
 ---
 
-## 4. I due livelli di allarme: il contributo distintivo
+## 5. Limiti
 
-[LU19] identifica esplicitamente in questo il contributo storico di DDM:
+### 5.1 Riconosciuti dagli autori
 
-> DDM è stato **il primo algoritmo a definire il livello di warning e il livello
-> di drift** per il rilevamento del concept drift.
-> *(parafrasato da [LU19], §3)*
+- **Efficacia dipendente dal learner** (§5): il metodo è più efficace con
+  algoritmi dotati di maggiore capacità di generalizzazione. Sul Perceptron il
+  guadagno è marginale o assente.
+- **Verifica su ELEC2 non conclusiva** (§4.3): gli autori dichiarano di non
+  sapere se e quando il drift avvenga sui dati reali.
 
-[LU19] descrive anche il **protocollo operativo** che i due livelli rendono
-possibile, ed è la parte più rilevante per la parte MLOps di questo lavoro:
+### 5.2 Attribuiti dalla letteratura successiva
 
-1. quando la confidenza sul cambiamento del tasso di errore raggiunge il
-   **livello di warning**, DDM comincia a costruire un nuovo learner,
-   continuando nel frattempo a usare quello vecchio per le predizioni;
-2. quando si raggiunge il **livello di drift**, il vecchio learner viene
-   sostituito da quello nuovo.
+- **Drift graduali lenti.** Secondo [SK17], EDDM (Baena-García et al., 2006) è
+  stato sviluppato come estensione di DDM proprio per essere adatto ai drift
+  graduali lenti, «dove DDM in precedenza falliva». EDDM monitora la **distanza
+  in numero di campioni fra due errori consecutivi** anziché il tasso di errore.
+  Come notato al §4, **questa non è un'affermazione del paper originale**.
+- **Soglie euristiche.** [LU19] riporta che HDDM modifica il quarto stadio di
+  DDM usando la disuguaglianza di Hoeffding per identificare la regione critica.
+- **Verdetto globale.** [LU19]: LLDD scompone il problema in decisioni locali
+  sui nodi di un albero.
 
-Questo risolve un problema pratico che altrimenti non ha soluzione pulita:
-**su quali dati riaddestrare?** I dati vecchi appartengono al concetto
-superato; quelli nuovi, nell'istante in cui il drift viene confermato, sarebbero
-pochissimi. La zona di warning è la finestra temporale durante la quale si
-accumulano campioni che appartengono già al nuovo concetto.
+### 5.3 Che discendono dalla formulazione
 
-### Collocazione nel framework a quattro stadi di [LU19]
+- **Richiede le etichette vere.** Il tasso di errore non è calcolabile senza
+  `y_true`. In produzione, con label delay, il rilevamento arriva con il ritardo
+  con cui arrivano le etichette.
+- **Unilaterale.** Entrambe le soglie confrontano `p_i + s_i` con un **minimo**
+  storico: DDM reagisce alla sola crescita dell'errore.
+- **Finestra landmark, non scorrevole.** Secondo la ricostruzione di [LU19], il
+  punto iniziale è fisso e quello finale si estende a ogni nuova istanza. È
+  coerente con il meccanismo di dichiarazione di un nuovo contesto descritto dal
+  paper: dopo un drift si riparte.
 
-[LU19] propone un framework generale in quattro stadi per il rilevamento del
-drift, e vi colloca DDM così:
+### 5.4 Una correzione importante sulla regressione
 
-| Stadio | In DDM |
-|---|---|
-| 1 — Raggruppamento dei dati | Finestra temporale **landmark**: il punto iniziale è fisso, quello finale si estende a ogni nuova istanza |
-| 2 — Modellazione dei dati | Il classificatore che produce le predizioni |
-| 3 — Statistica di test | Il tasso di errore online |
-| 4 — Test di ipotesi | Stima della distribuzione del tasso di errore e calcolo delle soglie di warning e di drift |
+Nelle conclusioni (§5) gli autori scrivono che l'algoritmo **potrebbe essere
+applicato con qualunque funzione di perdita**, dati valori appropriati di `α`, e
+che risultati preliminari **in dominio di regressione** usando l'errore
+quadratico medio confermano quelli presentati.
 
-La natura **landmark** della finestra è un dettaglio importante e spesso
-trascurato: DDM non usa una finestra scorrevole. Accumula dal punto di
-partenza, e questo spiega perché dopo un drift l'algoritmo debba essere
-reinizializzato.
+⚠️ Va quindi corretta un'affermazione troppo netta presente altrove in questa
+documentazione. La formulazione corretta è:
 
----
+- **il metodo DDM, come concepito dagli autori, non è limitato alla
+  classificazione**; gli autori ne prospettano esplicitamente l'uso con altre
+  funzioni di perdita;
+- **la sua realizzazione in `river.drift.binary.DDM` sì**, perché implementa la
+  derivazione bernoulliana `s_i = sqrt(p_i(1−p_i)/i)`, che presuppone un esito a
+  due valori.
 
-## 5. Limiti documentati in letteratura
-
-### 5.1 Il drift graduale
-
-È il limite riconosciuto dalle fonti in modo più esplicito. [SK17] afferma che
-EDDM (Baena-García et al., 2006)
-
-> è stato sviluppato come estensione di DDM ed è stato reso adatto ai drift
-> graduali lenti, **dove DDM in precedenza falliva**.
-> *(parafrasato da [SK17], §2.1.2)*
-
-EDDM cambia la statistica monitorata: invece del tasso di errore osserva la
-**distanza, in numero di campioni, fra due errori di classificazione
-consecutivi**. Sotto il modello PAC, in ambiente stazionario ci si attende che
-tale distanza cresca.
-
-Il limite è coerente con quanto misurato negli esperimenti di questo lavoro: sul
-drift graduale e su quello incrementale DDM raggiunge un tasso di mancate
-rilevazioni del 40–45%, contro lo 0% del drift improvviso.
-
-### 5.2 Le altre varianti come mappa dei limiti
-
-[LU19] elenca le varianti nate da DDM, e ciascuna identifica per contrasto un
-limite dell'originale:
-
-| Variante | Stadio modificato | Limite di DDM che affronta |
-|---|---|---|
-| **EDDM** (Baena-García et al., 2006) | 3 | Sensibilità insufficiente sui drift graduali |
-| **HDDM** (Frías-Blanco et al.) | 4 | Le soglie di DDM sono euristiche; HDDM usa la disuguaglianza di Hoeffding per definire la regione critica |
-| **FW-DDM** | 1 | La finestra temporale convenzionale non gestisce bene il drift graduale; introduce una finestra fuzzy |
-| **LLDD** | 3 e 4 | DDM produce un verdetto globale; LLDD lo scompone in decisioni locali sui nodi di un albero |
-| **DELM** | — | Non cambia il rilevamento ma il learner di base |
-
-Questa tabella è utile in tesi: mostra che i limiti di DDM sono **noti,
-catalogati e affrontati** dalla letteratura, il che è più solido che elencarli
-come osservazioni personali.
-
-### 5.3 Limiti che discendono direttamente dalla formulazione
-
-Non sono affermazioni delle fonti, ma conseguenze verificabili delle formule
-riportate al §3, e come tali vanno presentate:
-
-- **Richiede le etichette vere.** DDM è classificato da [SK17] fra i metodi
-  *espliciti (supervisionati)*: senza `y_true` il tasso di errore non è
-  calcolabile. In produzione, con label delay, il rilevamento arriva con il
-  ritardo con cui arrivano le etichette.
-- **Solo errore binario.** La modellazione bernoulliana di `s_t` presuppone un
-  esito a due valori. Non è applicabile all'errore di un modello di regressione,
-  che è un reale non limitato — è precisamente il caso coperto da Page-Hinkley.
-- **Unilaterale.** Le due soglie confrontano `p_t + s_t` con un **minimo**
-  storico: DDM reagisce solo alla crescita dell'errore. Un cambiamento di
-  concetto che lasciasse invariata o migliorasse l'accuratezza non verrebbe
-  rilevato. Dal punto di vista operativo è desiderabile; dal punto di vista
-  della caratterizzazione del fenomeno è un limite.
+Il vincolo che il framework di questa tesi impone — `DDMStrategy` rifiuta valori
+non binari — è quindi corretto **rispetto all'implementazione usata**, ma non va
+presentato come un limite del metodo. La generalizzazione a una funzione di
+perdita continua richiederebbe una diversa stima della varianza ed è una
+direzione di sviluppo futuro suggerita dagli autori stessi.
 
 ---
 
 ## 6. Domande di verifica
 
-Domande a cui questo documento permette di rispondere citando la fonte.
+**Qual è l'idea centrale del paper?**
+Il concetto di **contesto**: un insieme di esempi in cui la funzione generatrice
+è stazionaria. Il flusso è una successione di contesti, e il metodo serve a
+individuarne i confini per riapprendere solo sull'informazione rilevante.
 
-**A quale famiglia appartiene DDM?**
-Controllo statistico di processo, secondo la tassonomia di [SK17], §2.1.2 —
-distinta dall'analisi sequenziale (CUSUM, PHT) e dal windowing adattivo (ADWIN).
+**Da dove vengono i coefficienti 2 e 3?**
+Sono i moltiplicatori `α` dell'intervallo di confidenza `p_i ± α·s_i`, valido
+per `n > 30` sotto approssimazione normale della binomiale. Corrispondono al 95%
+e al 99% di confidenza, e il paper li dichiara come valori usati negli
+esperimenti, non come costanti del metodo.
 
-**Su quale presupposto teorico si fonda?**
-Il modello PAC: in ambiente stazionario il tasso di errore di un learner non
-deve crescere; un suo aumento significativo viola il modello ed è assunto come
-conseguenza di drift ([SK17], [LU19]).
+**Su quali dati si riaddestra dopo un drift?**
+Sugli esempi da `k_w` a `k_d`, cioè dal livello di warning al livello di drift.
+Il warning definisce la dimensione della finestra di contesto.
 
-**Perché i coefficienti 2 e 3?**
-Sono i limiti di controllo a 2σ e 3σ delle carte SPC, corrispondenti a circa il
-95% e il 99% di confidenza sotto approssimazione normale della binomiale.
-Coerenti con la collocazione SPC di DDM.
+**Cosa succede se il warning non è seguito da un drift?**
+È trattato come falso allarme e il contesto non cambia. Il warning è uno stato
+reversibile.
 
-**Qual è il contributo storico di DDM?**
-Essere stato il primo algoritmo a definire i due livelli, warning e drift
-([LU19]) — e con essi il protocollo di costruzione anticipata di un nuovo
-learner durante la fase di warning.
+**È vero che DDM fallisce sui drift graduali?**
+È l'affermazione degli autori di EDDM, riportata da [SK17]. Il paper originale
+include un dataset a drift graduale (CIRCLES) e non dichiara quel limite.
 
-**Qual è il limite principale?**
-I drift graduali lenti: è la motivazione dichiarata per cui è stato sviluppato
-EDDM ([SK17]).
+**DDM funziona sulla regressione?**
+Il metodo sì, secondo gli autori, con una funzione di perdita appropriata e
+risultati preliminari con MSE. L'implementazione di river no, perché usa la
+derivazione bernoulliana.
 
-**Che finestra usa?**
-Landmark, non scorrevole: punto iniziale fisso, punto finale che si estende a
-ogni nuova istanza ([LU19]).
+**Gli autori hanno verificato i falsi allarmi?**
+Sì, sul dataset ADULT, a concetto stabile: il metodo non rileva mai drift.
+
+**Che risultati hanno ottenuto su ELEC2?**
+Errore 0,104 sul test a un giorno, pari al limite inferiore ottenuto per ricerca
+esaustiva, e 0,199 sul test a una settimana contro un limite inferiore di 0,190.
 
 ---
 
 ## 7. Riferimenti
 
-**Paper primario, da recuperare via accesso istituzionale**
+**Fonte primaria**
 - Gama, J., Medas, P., Castillo, G., Rodrigues, P. (2004). *Learning with Drift
   Detection*. SBIA 2004, LNCS 3171, pp. 286–295. Springer.
   DOI 10.1007/978-3-540-28645-5_29
 
-**Fonti secondarie effettivamente consultate per questo documento**
-- Sethi, T. S., Kantardzic, M. (2017). *On the reliable detection of concept
-  drift from streaming unlabeled data*. Expert Systems with Applications, 82,
-  77–99. arXiv:1704.00023
-- Lu, J., Liu, A., Dong, F., Gu, F., Gama, J., Zhang, G. (2019). *Learning under
-  Concept Drift: A Review*. IEEE TKDE, 31(12), 2346–2363. arXiv:2004.05785
+**Citati dal paper originale e rilevanti per questa tesi**
+- Mitchell, T. (1997). *Machine Learning*. McGraw Hill. — rif. [9] del paper,
+  supporto della garanzia statistica sulla decrescita dell'errore
+- Harries, M. (1999). *Splice-2 comparative evaluation: Electricity pricing*.
+  Technical report, The University of South Wales. — rif. [2], fonte di ELEC2
+- Widmer, G., Kubat, M. (1996). *Learning in the presence of concept drift and
+  hidden contexts*. Machine Learning, 23, 69–101. — rif. [11], famiglia FLORA
+- Klinkenberg, R., Joachims, T. (2000). *Detecting concept drift with support
+  vector machines*. ICML-00, pp. 487–494. — rif. [5]
+- Kubat, M., Widmer, G. (1995). *Adapting to drift in continuous domain*. ECML,
+  pp. 307–310. — rif. [6], origine dei dataset artificiali
+- Blake, C., Keogh, E., Merz, C. J. (1999). *UCI repository of Machine Learning
+  databases*. — rif. [1], fonte del dataset ADULT
 
-**Citati dalle fonti sopra, non consultati direttamente**
-- Baena-García, M., del Campo-Ávila, J., Fidalgo, R., Bifet, A., Gavaldà, R.,
-  Morales-Bueno, R. (2006). *Early Drift Detection Method*. ECML PKDD Workshop
-  on Knowledge Discovery from Data Streams.
-- Nishida, K., Yamauchi, K. (2007). *Detecting concept drift using statistical
-  testing* (STEPD).
-- Ross, G. J., Adams, N. M., Tasoulis, D. K., Hand, D. J. (2012).
-  *Exponentially weighted moving average charts for detecting concept drift*.
-- Haussler, D. (1990) — modello PAC, citato da [SK17] come fondamento teorico.
+**Fonti secondarie, per la storia successiva dell'algoritmo**
+- Sethi, T. S., Kantardzic, M. (2017). Expert Systems with Applications, 82,
+  77–99. arXiv:1704.00023
+- Lu, J., et al. (2019). IEEE TKDE, 31(12), 2346–2363. arXiv:2004.05785
+- Baena-García, M., et al. (2006). *Early Drift Detection Method*. ECML PKDD
+  Workshop on Knowledge Discovery from Data Streams. — citato da [SK17], non
+  consultato direttamente
 
 **Implementazione**
-- Montiel, J., Halford, M., Mastelini, S. M., et al. (2021). *River: machine
-  learning for streaming data in Python*. Journal of Machine Learning Research,
-  22(110), 1–8. — classe `river.drift.binary.DDM`, versione 0.22.0
+- Montiel, J., et al. (2021). *River: machine learning for streaming data in
+  Python*. JMLR, 22(110), 1–8. — classe `river.drift.binary.DDM`, v. 0.22.0
