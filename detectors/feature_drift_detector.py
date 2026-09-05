@@ -127,6 +127,11 @@ class FeatureDriftDetector(BaseDriftDetector):
                 "n_drifted": len(drifted_indices),
                 "k_threshold": self.k,
                 "correzione": self.correzione,
+                # Punteggio grezzo di ciascuna feature (p-value per il KS,
+                # stima della media per ADWIN, None per le altre). Serve al
+                # servizio di monitoring per riportare un valore numerico
+                # anche sul drift multi-feature.
+                "punteggi": [r.score for r in risultati],
             },
         )
 

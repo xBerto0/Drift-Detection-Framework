@@ -70,4 +70,4 @@ FRIEDMAN_TRAIN_SIZE = int(os.getenv("FRIEDMAN_TRAIN_SIZE", 1000))
 
 
 # --- Servizio di monitoring ---
-DRIFT_CONFIG_PATH = os.getenv("DRIFT_CONFIG_PATH", "config/drift_config.json")
+DRIFT_CONFIG_PATH = os.getenv("DRIFT_CONFIG_PATH", "config/drift_config_drift.json")

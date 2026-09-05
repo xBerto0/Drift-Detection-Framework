@@ -29,27 +29,29 @@ from config import DATASET_ELEC2_PATH
 CARTELLA_DEMO = Path("data/demo")
 CARTELLA_MODELLI = Path("models/addestrati")
 
-# Il riferimento e' il periodo su cui il modello viene addestrato.
-INIZIO_RIFERIMENTO, FINE_RIFERIMENTO = 0, 5000
-# I dati correnti arrivano molto piu' avanti: e' il periodo in cui, dagli
-# esperimenti, l'accuratezza del classificatore risulta crollata.
-INIZIO_CORRENTE, FINE_CORRENTE = 38000, 43000
+# Due scenari, per mostrare che il servizio sa dire anche di no.
+#
+#   "drift"     il modello e' addestrato sul periodo iniziale e valutato su un
+#               periodo molto successivo, in cui dagli esperimenti risulta
+#               fortemente degradato.
+#   "stabile"   riferimento e dati correnti provengono dallo stesso periodo, a
+#               due meta' consecutive: il modello lavora nelle condizioni per
+#               cui e' stato addestrato.
+SCENARI = {
+    "drift":   {"riferimento": (0, 5000),    "corrente": (38000, 43000)},
+    "stabile": {"riferimento": (0, 2500),    "corrente": (2500, 5000)},
+}
 
 
-def main():
-    CARTELLA_DEMO.mkdir(parents=True, exist_ok=True)
-    CARTELLA_MODELLI.mkdir(parents=True, exist_ok=True)
+def prepara(nome_scenario, df, colonne_feature):
+    intervalli = SCENARI[nome_scenario]
+    a, b = intervalli["riferimento"]
+    c, d = intervalli["corrente"]
 
-    df = pd.read_csv(DATASET_ELEC2_PATH)
-    # La classe e' testuale (UP / DOWN): la si porta a 0/1.
-    df["class"] = np.where(df["class"].values == "UP", 1, 0)
+    riferimento = df.iloc[a:b].reset_index(drop=True)
+    corrente = df.iloc[c:d].reset_index(drop=True)
 
-    riferimento = df.iloc[INIZIO_RIFERIMENTO:FINE_RIFERIMENTO].reset_index(drop=True)
-    corrente = df.iloc[INIZIO_CORRENTE:FINE_CORRENTE].reset_index(drop=True)
-
-    colonne_feature = [c for c in df.columns if c != "class"]
-
-    # --- Modello addestrato SOLO sul riferimento ---
+    # Il modello vede SOLO il riferimento, come nella realta'.
     modello = GaussianNB()
     modello.fit(riferimento[colonne_feature].values, riferimento["class"].values)
 
@@ -60,28 +62,34 @@ def main():
         corrente[colonne_feature].values, corrente["class"].values,
     )
 
-    percorso_modello = CARTELLA_MODELLI / "classificatore_elec2.pkl"
+    percorso_modello = CARTELLA_MODELLI / f"classificatore_{nome_scenario}.pkl"
     with open(percorso_modello, "wb") as f:
         pickle.dump(modello, f)
 
-    riferimento.to_csv(CARTELLA_DEMO / "riferimento.csv", index=False)
-    corrente.to_csv(CARTELLA_DEMO / "corrente.csv", index=False)
+    riferimento.to_csv(CARTELLA_DEMO / f"{nome_scenario}_riferimento.csv", index=False)
+    corrente.to_csv(CARTELLA_DEMO / f"{nome_scenario}_corrente.csv", index=False)
 
-    print("Scenario della demo pronto.")
+    print(f"  scenario '{nome_scenario}':")
+    print(f"     riferimento campioni {a}-{b}, correnti {c}-{d}")
+    print(f"     accuratezza sul riferimento {accuratezza_rif:.3f}  ->  "
+          f"sui dati nuovi {accuratezza_cur:.3f}")
+
+
+def main():
+    CARTELLA_DEMO.mkdir(parents=True, exist_ok=True)
+    CARTELLA_MODELLI.mkdir(parents=True, exist_ok=True)
+
+    df = pd.read_csv(DATASET_ELEC2_PATH)
+    # La classe e' testuale (UP / DOWN): la si porta a 0/1.
+    df["class"] = np.where(df["class"].values == "UP", 1, 0)
+    colonne_feature = [c for c in df.columns if c != "class"]
+
+    print("Scenari della demo:")
     print()
-    print(f"  Riferimento : campioni {INIZIO_RIFERIMENTO}-{FINE_RIFERIMENTO} "
-          f"({len(riferimento)} righe)")
-    print(f"  Correnti    : campioni {INIZIO_CORRENTE}-{FINE_CORRENTE} "
-          f"({len(corrente)} righe)")
-    print(f"  Modello     : GaussianNB addestrato sul solo riferimento")
+    for nome in SCENARI:
+        prepara(nome, df, colonne_feature)
     print()
-    print(f"  Accuratezza sul riferimento : {accuratezza_rif:.3f}")
-    print(f"  Accuratezza sui dati nuovi  : {accuratezza_cur:.3f}")
-    print()
-    print("  File prodotti:")
-    print(f"    {CARTELLA_DEMO / 'riferimento.csv'}")
-    print(f"    {CARTELLA_DEMO / 'corrente.csv'}")
-    print(f"    {percorso_modello}")
+    print(f"File in {CARTELLA_DEMO}/ e {CARTELLA_MODELLI}/")
 
 
 if __name__ == "__main__":
