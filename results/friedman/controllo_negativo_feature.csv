@@ -1,0 +1,16 @@
+variante,strategia,n_episodi,frazione_tempo_in_allarme,gia_in_drift,n_eventi
+lea,KS (nessuna correzione),519,0.3326,True,518
+lea,KS + Bonferroni,69,0.0291,False,69
+lea,KS + Benjamini-Hochberg,71,0.0309,False,71
+lea,ADWIN,0,0.0,False,0
+lea,_atteso_senza_correzione,,0.4013,,
+gra,KS (nessuna correzione),519,0.3326,True,518
+gra,KS + Bonferroni,69,0.0291,False,69
+gra,KS + Benjamini-Hochberg,71,0.0309,False,71
+gra,ADWIN,0,0.0,False,0
+gra,_atteso_senza_correzione,,0.4013,,
+gsg,KS (nessuna correzione),519,0.3326,True,518
+gsg,KS + Bonferroni,69,0.0291,False,69
+gsg,KS + Benjamini-Hochberg,71,0.0309,False,71
+gsg,ADWIN,0,0.0,False,0
+gsg,_atteso_senza_correzione,,0.4013,,

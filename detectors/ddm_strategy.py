@@ -83,11 +83,11 @@ class DDMStrategy(BaseDriftDetector):
         # basano le politiche di retraining.
         return DriftResult(
             detector_name=self.detector_name,
-            drift_detected=self.ddm.drift_detected,
+            drift_detected=bool(self.ddm.drift_detected),
             drift_type=self.drift_type,
             score=None,  # DDM non espone una statistica continua confrontabile
             metadata={
-                "warning_detected": self.ddm.warning_detected,
+                "warning_detected": bool(self.ddm.warning_detected),
                 "warm_start": self.warm_start,
                 "warning_threshold": self.warning_threshold,
                 "drift_threshold": self.drift_threshold,

@@ -42,6 +42,19 @@ nuova strategia richiede una sola classe).
 
 Tutte le strategie sono intercambiabili nei detector.
 
+## Dataset
+
+- **ELEC2** (`data/electricity-normalized.csv`) — mercato elettrico australiano,
+  45.312 istanze, 8 feature, classificazione binaria.
+- **Friedman** (`data/friedman_{lea,gra,gsg}.csv`) — regressione sintetica con
+  concept drift in posizione nota, nelle tre varianti di
+  Ikonomovska et al. (2011): locale-brusco, globale-ricorrente, globale-graduale.
+  Sono file fissi versionati in repository; `data/generate_friedman.py` li
+  rigenera in modo deterministico. La ground truth dei punti di drift sta in
+  `data/friedman_metadata.json`.
+- **Bernoulli sintetici** — generati al volo da `data/synthetic_generator.py`
+  nei quattro tipi temporali di drift piu' il caso stazionario.
+
 ## Validazione sperimentale
 
 Il protocollo di valutazione confronta le strategie su stream sintetici con
@@ -49,14 +62,39 @@ drift noto per costruzione, misurando **latenza di rilevamento**, **tasso di
 falsi allarmi** e **tasso di mancate rilevazioni** su piu' ripetizioni.
 
 ```powershell
-# Matrice completa: strategia x tipo di drift x 20 seed
+# Matrice completa su dati sintetici: strategia x tipo di drift x 20 seed
 python -m evaluation.runner_sintetici
+
+# ELEC2 (classificazione): conteggio a episodi e controllo qualita' del dataset
+python -m evaluation.runner_elec2
+
+# Friedman (regressione): concept drift sull'errore assoluto
+python -m evaluation.runner_friedman
 
 # Figure per la tesi (PDF vettoriale in thesis/figures/)
 python -m evaluation.plots
 ```
 
-I risultati finiscono in `results/sintetici/` come CSV e JSON.
+I risultati finiscono in `results/sintetici/`, `results/elec2/` e
+`results/friedman/` come CSV e JSON.
+
+### Correzione per test multipli
+
+`FeatureDriftDetector` esegue un test indipendente per feature: con `k=1` e
+`n` feature, la probabilita' di almeno un falso positivo per passo e'
+`1 - (1 - alpha)^n`, cioe' il 40% con 10 feature e `alpha = 0.05`. Il detector
+supporta quindi due correzioni:
+
+```python
+FeatureDriftDetector(
+    KSStrategy, n_features=10, k=1,
+    correzione="bonferroni",      # oppure "benjamini-hochberg"
+    alpha_correzione=0.05,
+    window_size=100, alpha=0.05,
+)
+```
+
+Il default resta `correzione=None`, che conserva il comportamento storico.
 
 ## Test
 

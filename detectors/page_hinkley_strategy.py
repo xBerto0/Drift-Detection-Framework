@@ -90,7 +90,7 @@ class PageHinkleyStrategy(BaseDriftDetector):
     def detect(self) -> DriftResult:
         return DriftResult(
             detector_name=self.detector_name,
-            drift_detected=self.ph.drift_detected,
+            drift_detected=bool(self.ph.drift_detected),
             drift_type=self.drift_type,
             score=None,  # la statistica interna PH_T non e' esposta da river
             metadata={

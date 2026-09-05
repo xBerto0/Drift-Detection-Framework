@@ -1,0 +1,13 @@
+variante,strategia,n_drift_reali,n_rilevati,n_mancati,n_falsi_allarmi,latenza_media,falsi_allarmi_per_1000,n_episodi
+lea,KS,3,2,1,104,87,6.582,125
+lea,ADWIN,3,2,1,0,659,0.0,2
+lea,PageHinkley,3,3,0,36,362,2.278,41
+lea,Ensemble-MAJORITY,3,2,1,11,659,0.696,13
+gra,KS,2,1,1,11,28,0.655,12
+gra,ADWIN,2,2,0,0,51,0.0,2
+gra,PageHinkley,2,1,1,32,22,1.905,38
+gra,Ensemble-MAJORITY,2,2,0,26,51,1.548,33
+gsg,KS,2,1,1,10,49,0.595,38
+gsg,ADWIN,2,1,1,2,143,0.119,3
+gsg,PageHinkley,2,2,0,38,157.5,2.262,44
+gsg,Ensemble-MAJORITY,2,2,0,36,157.5,2.143,42

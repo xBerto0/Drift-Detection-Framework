@@ -27,9 +27,9 @@ class ADWINStrategy(BaseDriftDetector):
         # in cui ADWIN ha appena tagliato la finestra.
         return DriftResult(
             detector_name=self.detector_name,
-            drift_detected=self.adwin.drift_detected,
+            drift_detected=bool(self.adwin.drift_detected),
             drift_type=self.drift_type,
-            score=self.adwin.estimation,
+            score=float(self.adwin.estimation),
             metadata={"delta": self.delta},
         )
 

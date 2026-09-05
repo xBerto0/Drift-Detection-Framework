@@ -1,0 +1,304 @@
+{
+  "generato_il": "2026-08-23T17:42:32",
+  "modello": "DecisionTreeRegressor(max_depth=8), statico",
+  "train_size": 1000,
+  "tolleranza": 1000,
+  "inizio_valutazione": 200,
+  "varianti": [
+    {
+      "variante": "lea",
+      "descrizione": "Local Expanding Abrupt drift (tre cambi bruschi locali)",
+      "drift_assoluti": [
+        5000,
+        10000,
+        15000
+      ],
+      "mae_globale": 2.5762,
+      "concept": {
+        "KS": {
+          "n_episodi": 125,
+          "n_rilevati": 2,
+          "n_drift_reali": 3,
+          "n_falsi_allarmi": 104,
+          "n_mancati": 1,
+          "latenza_media": 87,
+          "latenze": [
+            11,
+            163
+          ],
+          "falsi_allarmi_per_1000": 6.582278481012658,
+          "tasso_mancate": 0.3333333333333333
+        },
+        "ADWIN": {
+          "n_episodi": 2,
+          "n_rilevati": 2,
+          "n_drift_reali": 3,
+          "n_falsi_allarmi": 0,
+          "n_mancati": 1,
+          "latenza_media": 659,
+          "latenze": [
+            727,
+            591
+          ],
+          "falsi_allarmi_per_1000": 0.0,
+          "tasso_mancate": 0.3333333333333333
+        },
+        "PageHinkley": {
+          "n_episodi": 41,
+          "n_rilevati": 3,
+          "n_drift_reali": 3,
+          "n_falsi_allarmi": 36,
+          "n_mancati": 0,
+          "latenza_media": 362,
+          "latenze": [
+            227,
+            727,
+            132
+          ],
+          "falsi_allarmi_per_1000": 2.2784810126582276,
+          "tasso_mancate": 0.0
+        },
+        "Ensemble-MAJORITY": {
+          "n_episodi": 13,
+          "n_rilevati": 2,
+          "n_drift_reali": 3,
+          "n_falsi_allarmi": 11,
+          "n_mancati": 1,
+          "latenza_media": 659,
+          "latenze": [
+            727,
+            591
+          ],
+          "falsi_allarmi_per_1000": 0.6962025316455696,
+          "tasso_mancate": 0.3333333333333333
+        }
+      },
+      "controllo_negativo_feature": {
+        "KS (nessuna correzione)": {
+          "n_episodi": 519,
+          "frazione_tempo_in_allarme": 0.3326,
+          "gia_in_drift": true,
+          "n_eventi": 518
+        },
+        "KS + Bonferroni": {
+          "n_episodi": 69,
+          "frazione_tempo_in_allarme": 0.0291,
+          "gia_in_drift": false,
+          "n_eventi": 69
+        },
+        "KS + Benjamini-Hochberg": {
+          "n_episodi": 71,
+          "frazione_tempo_in_allarme": 0.0309,
+          "gia_in_drift": false,
+          "n_eventi": 71
+        },
+        "ADWIN": {
+          "n_episodi": 0,
+          "frazione_tempo_in_allarme": 0.0,
+          "gia_in_drift": false,
+          "n_eventi": 0
+        },
+        "_atteso_senza_correzione": {
+          "n_episodi": null,
+          "frazione_tempo_in_allarme": 0.4013,
+          "gia_in_drift": null,
+          "n_eventi": null
+        }
+      }
+    },
+    {
+      "variante": "gra",
+      "descrizione": "Global Recurring Abrupt drift (il concetto iniziale ritorna)",
+      "drift_assoluti": [
+        7000,
+        14000
+      ],
+      "mae_globale": 2.9433,
+      "concept": {
+        "KS": {
+          "n_episodi": 12,
+          "n_rilevati": 1,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 11,
+          "n_mancati": 1,
+          "latenza_media": 28,
+          "latenze": [
+            28
+          ],
+          "falsi_allarmi_per_1000": 0.6547619047619048,
+          "tasso_mancate": 0.5
+        },
+        "ADWIN": {
+          "n_episodi": 2,
+          "n_rilevati": 2,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 0,
+          "n_mancati": 0,
+          "latenza_media": 51,
+          "latenze": [
+            47,
+            55
+          ],
+          "falsi_allarmi_per_1000": 0.0,
+          "tasso_mancate": 0.0
+        },
+        "PageHinkley": {
+          "n_episodi": 38,
+          "n_rilevati": 1,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 32,
+          "n_mancati": 1,
+          "latenza_media": 22,
+          "latenze": [
+            22
+          ],
+          "falsi_allarmi_per_1000": 1.9047619047619047,
+          "tasso_mancate": 0.5
+        },
+        "Ensemble-MAJORITY": {
+          "n_episodi": 33,
+          "n_rilevati": 2,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 26,
+          "n_mancati": 0,
+          "latenza_media": 51,
+          "latenze": [
+            47,
+            55
+          ],
+          "falsi_allarmi_per_1000": 1.5476190476190474,
+          "tasso_mancate": 0.0
+        }
+      },
+      "controllo_negativo_feature": {
+        "KS (nessuna correzione)": {
+          "n_episodi": 519,
+          "frazione_tempo_in_allarme": 0.3326,
+          "gia_in_drift": true,
+          "n_eventi": 518
+        },
+        "KS + Bonferroni": {
+          "n_episodi": 69,
+          "frazione_tempo_in_allarme": 0.0291,
+          "gia_in_drift": false,
+          "n_eventi": 69
+        },
+        "KS + Benjamini-Hochberg": {
+          "n_episodi": 71,
+          "frazione_tempo_in_allarme": 0.0309,
+          "gia_in_drift": false,
+          "n_eventi": 71
+        },
+        "ADWIN": {
+          "n_episodi": 0,
+          "frazione_tempo_in_allarme": 0.0,
+          "gia_in_drift": false,
+          "n_eventi": 0
+        },
+        "_atteso_senza_correzione": {
+          "n_episodi": null,
+          "frazione_tempo_in_allarme": 0.4013,
+          "gia_in_drift": null,
+          "n_eventi": null
+        }
+      }
+    },
+    {
+      "variante": "gsg",
+      "descrizione": "Global Slow Gradual drift (transizione lenta di 1000 campioni)",
+      "drift_assoluti": [
+        7000,
+        14000
+      ],
+      "mae_globale": 3.4235,
+      "concept": {
+        "KS": {
+          "n_episodi": 38,
+          "n_rilevati": 1,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 10,
+          "n_mancati": 1,
+          "latenza_media": 49,
+          "latenze": [
+            49
+          ],
+          "falsi_allarmi_per_1000": 0.5952380952380952,
+          "tasso_mancate": 0.5
+        },
+        "ADWIN": {
+          "n_episodi": 3,
+          "n_rilevati": 1,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 2,
+          "n_mancati": 1,
+          "latenza_media": 143,
+          "latenze": [
+            143
+          ],
+          "falsi_allarmi_per_1000": 0.11904761904761904,
+          "tasso_mancate": 0.5
+        },
+        "PageHinkley": {
+          "n_episodi": 44,
+          "n_rilevati": 2,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 38,
+          "n_mancati": 0,
+          "latenza_media": 157.5,
+          "latenze": [
+            63,
+            252
+          ],
+          "falsi_allarmi_per_1000": 2.261904761904762,
+          "tasso_mancate": 0.0
+        },
+        "Ensemble-MAJORITY": {
+          "n_episodi": 42,
+          "n_rilevati": 2,
+          "n_drift_reali": 2,
+          "n_falsi_allarmi": 36,
+          "n_mancati": 0,
+          "latenza_media": 157.5,
+          "latenze": [
+            63,
+            252
+          ],
+          "falsi_allarmi_per_1000": 2.142857142857143,
+          "tasso_mancate": 0.0
+        }
+      },
+      "controllo_negativo_feature": {
+        "KS (nessuna correzione)": {
+          "n_episodi": 519,
+          "frazione_tempo_in_allarme": 0.3326,
+          "gia_in_drift": true,
+          "n_eventi": 518
+        },
+        "KS + Bonferroni": {
+          "n_episodi": 69,
+          "frazione_tempo_in_allarme": 0.0291,
+          "gia_in_drift": false,
+          "n_eventi": 69
+        },
+        "KS + Benjamini-Hochberg": {
+          "n_episodi": 71,
+          "frazione_tempo_in_allarme": 0.0309,
+          "gia_in_drift": false,
+          "n_eventi": 71
+        },
+        "ADWIN": {
+          "n_episodi": 0,
+          "frazione_tempo_in_allarme": 0.0,
+          "gia_in_drift": false,
+          "n_eventi": 0
+        },
+        "_atteso_senza_correzione": {
+          "n_episodi": null,
+          "frazione_tempo_in_allarme": 0.4013,
+          "gia_in_drift": null,
+          "n_eventi": null
+        }
+      }
+    }
+  ]
+}
