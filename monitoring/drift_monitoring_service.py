@@ -69,7 +69,19 @@ class DriftMonitoringService:
     def da_file(cls, percorso, radice: Path = None):
         percorso = Path(percorso)
         with open(percorso, encoding="utf-8") as f:
-            configurazione = json.load(f)
+            testo = f.read()
+        try:
+            configurazione = json.loads(testo)
+        except json.JSONDecodeError as e:
+            # Il caso tipico e' una virgola di troppo o una virgoletta mancante
+            # dopo una modifica a mano. Indicare riga e colonna fa risparmiare
+            # molto piu' tempo di un traceback.
+            raise ErroreConfigurazione(
+                f"Il file {percorso} non e' JSON valido: {e.msg}, "
+                f"riga {e.lineno}, colonna {e.colno}. "
+                f"Le cause piu' comuni sono una virgola in piu' prima di una "
+                f"parentesi chiusa, oppure delle virgolette mancanti."
+            ) from None
         return cls(configurazione, radice=radice)
 
     # -- validazione ------------------------------------------------------
