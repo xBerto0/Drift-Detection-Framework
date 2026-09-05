@@ -111,7 +111,14 @@ class DriftMonitoringService:
                     f"Ammesse: {', '.join(STRATEGIE_AMMESSE[tipo])}."
                 )
             for nome in strategie:
-                verifica_applicabilita(tipo, nome)
+                # Il registro solleva ValueError; qui lo si riporta al tipo di
+                # eccezione usato per tutti i problemi di configurazione, cosi'
+                # il chiamante ne deve gestire uno solo e l'utente vede un
+                # messaggio pulito invece di un traceback.
+                try:
+                    verifica_applicabilita(tipo, nome)
+                except ValueError as e:
+                    raise ErroreConfigurazione(str(e)) from None
 
             # Controlla che ci sia tutto il necessario per quel tipo di drift.
             requisiti = REQUISITI[tipo]
@@ -374,7 +381,9 @@ class DriftMonitoringService:
             # Se il drift e' stato rilevato si riporta il valore in quel
             # momento, altrimenti l'ultimo osservato.
             "score": score,
-            "tipo_score": TIPO_SCORE.get(nome),
+            # L'etichetta ha senso solo se un punteggio c'e' davvero: altrimenti
+            # si dichiarerebbe il tipo di un valore assente.
+            "tipo_score": TIPO_SCORE.get(nome) if score is not None else None,
             "primo_rilevamento": primo,
         }
 

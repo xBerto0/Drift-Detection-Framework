@@ -1,0 +1,35 @@
+{
+  "input": {
+    "reference": "data/demo/drift_riferimento.csv",
+    "current": "data/demo/drift_corrente.csv",
+    "target_column": "class",
+    "model_path": "models/addestrati/classificatore_drift.pkl",
+    "exclude_columns": [
+      "date"
+    ]
+  },
+  "drift_da_rilevare": {
+    "data_drift": [
+      "ks",
+      "ddm"
+    ]
+  },
+  "parametri": {
+    "ks": {
+      "window_size": 200,
+      "alpha": 0.05
+    },
+    "adwin": {
+      "delta": 0.002
+    },
+    "ddm": {
+      "warm_start": 200
+    },
+    "page_hinkley": {
+      "mode": "up",
+      "threshold": 50.0
+    }
+  },
+  "correzione_test_multipli": "bonferroni",
+  "aggregazione": "or"
+}
