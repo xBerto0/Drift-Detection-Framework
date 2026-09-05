@@ -27,6 +27,16 @@ class FeatureDriftDetector(BaseDriftDetector):
         for i in range(self.n_features):
             self.strategies[i].update(x[i])
 
+    def imposta_riferimento(self, X) -> None:
+        """Passa a ogni strategia la colonna di riferimento che le compete.
+
+        `X` e' una matrice campioni x feature: si scompone per colonna e ogni
+        colonna va alla strategia che monitora quella feature.
+        """
+        for i in range(self.n_features):
+            colonna = [riga[i] for riga in X]
+            self.strategies[i].imposta_riferimento(colonna)
+
     def detect(self) -> DriftResult:
         # Chiede ad ogni strategia se vede drift sulla sua feature.
         drifted_indices = []

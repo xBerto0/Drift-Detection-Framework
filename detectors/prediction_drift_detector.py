@@ -16,6 +16,10 @@ class PredictionDriftDetector(BaseDriftDetector):
         # Delega alla strategia sottostante.
         self.strategy.update(y_pred)
 
+    def imposta_riferimento(self, y_pred_riferimento) -> None:
+        """Fissa la baseline sulle predizioni prodotte sui dati di training."""
+        self.strategy.imposta_riferimento(y_pred_riferimento)
+
     def detect(self) -> DriftResult:
         # Legge il verdetto della strategia e riclassifica il tipo di drift.
         result = self.strategy.detect()

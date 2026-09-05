@@ -45,6 +45,18 @@ class ConceptDriftDetector(BaseDriftDetector):
         errore = self.error_fn(y_pred, y_true)
         self.strategy.update(errore)
 
+    def imposta_riferimento(self, y_pred_riferimento, y_true_riferimento) -> None:
+        """Fissa la baseline sugli errori commessi sui dati di training.
+
+        Riceve le coppie e non uno stream gia' pronto perche' il calcolo
+        dell'errore e' responsabilita' di questo detector, non del chiamante.
+        """
+        errori = [
+            self.error_fn(pred, vero)
+            for pred, vero in zip(y_pred_riferimento, y_true_riferimento)
+        ]
+        self.strategy.imposta_riferimento(errori)
+
     def detect(self) -> DriftResult:
         # Legge il verdetto della strategia e riclassifica il tipo di drift.
         result = self.strategy.detect()
